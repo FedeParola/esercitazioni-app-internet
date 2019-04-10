@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.sql.Time;
+import java.util.Set;
 
 @Entity
 @Data
@@ -29,5 +30,6 @@ public class Stop {
     @JoinColumn(name = "LineId", nullable = false)
     private Line line;
 
-
+    @OneToMany(mappedBy = "key.stop")
+    private Set<Reservation> reservations;
 }

@@ -16,6 +16,6 @@ public class Line {
     @Column(name = "Name", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "LineId")
+    @OneToMany(mappedBy = "line")
     private Set<Stop> stops;
 }
