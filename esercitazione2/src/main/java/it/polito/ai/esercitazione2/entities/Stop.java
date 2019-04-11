@@ -4,7 +4,6 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.sql.Time;
-import java.util.Set;
 
 @Entity
 @Data
@@ -17,8 +16,8 @@ public class Stop {
     @Column(name = "Name", nullable = false)
     private String name;
 
-    @Column(name = "Order", nullable = false)
-    private Integer order;
+    @Column(name = "Position", nullable = false)
+    private Integer position;
 
     @Column(name = "Direction", nullable = false)
     private Character direction;
@@ -29,7 +28,4 @@ public class Stop {
     @ManyToOne
     @JoinColumn(name = "LineId", nullable = false)
     private Line line;
-
-    @OneToMany(mappedBy = "key.stop")
-    private Set<Reservation> reservations;
 }

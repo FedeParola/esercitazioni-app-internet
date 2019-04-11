@@ -5,8 +5,6 @@ import lombok.Data;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import java.util.Set;
 
 @Data
 @Entity
@@ -20,7 +18,4 @@ public class Student {
 
     @Column(name = "LastName", nullable = false)
     private String lastName;
-
-    @OneToMany(mappedBy = "key.student")
-    private Set<Reservation> reservations;
 }
