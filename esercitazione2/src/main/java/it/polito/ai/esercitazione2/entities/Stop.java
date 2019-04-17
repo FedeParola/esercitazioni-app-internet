@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.sql.Time;
+import java.util.List;
 
 @Entity
 @Data
@@ -28,4 +29,7 @@ public class Stop {
     @ManyToOne
     @JoinColumn(name = "LineId", nullable = false)
     private Line line;
+
+    @OneToMany(mappedBy = "stop")
+    private List<Reservation> reservations;
 }

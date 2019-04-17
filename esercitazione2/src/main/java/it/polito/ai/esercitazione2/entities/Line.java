@@ -2,10 +2,8 @@ package it.polito.ai.esercitazione2.entities;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Data
@@ -15,6 +13,9 @@ public class Line {
     @Column(name = "Id")
     private Long id;
 
-    @Column(name = "Name", nullable = false)
+    @Column(name = "Name", nullable = false, unique = true)
     private String name;
+
+    @OneToMany(mappedBy = "line")
+    private List<Stop> stops;
 }

@@ -3,26 +3,23 @@ package it.polito.ai.esercitazione2.entities;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.sql.Timestamp;
+import java.sql.Date;
 
 @Entity
 @Data
 public class Reservation {
-    @EmbeddedId
-    private ReservationKey key;
+    @Id
+    @GeneratedValue
+    @Column(name = "Id")
+    private Long id;
 
-    @Embeddable
-    public class ReservationKey implements Serializable {
-        @ManyToOne
-        @JoinColumn(name = "StudentId", nullable = false)
-        private Student student;
+    @Column(name = "Student", nullable = false)
+    private String student;
 
-        @ManyToOne
-        @JoinColumn(name = "StopId", nullable = false)
-        private Stop stop;
+    @Column(name = "Date", nullable = false)
+    private Date date;
 
-        @Column(name = "DateTime", nullable = false)
-        private Timestamp dateTime;
-    }
+    @ManyToOne
+    @JoinColumn(name = "StopId", nullable = false)
+    private Stop stop;
 }
