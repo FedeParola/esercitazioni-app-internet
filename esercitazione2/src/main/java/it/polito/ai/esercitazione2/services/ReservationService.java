@@ -3,13 +3,17 @@ package it.polito.ai.esercitazione2.services;
 import it.polito.ai.esercitazione2.entities.Line;
 import it.polito.ai.esercitazione2.entities.Reservation;
 import it.polito.ai.esercitazione2.entities.Stop;
+import it.polito.ai.esercitazione2.exceptions.BadRequestException;
+import it.polito.ai.esercitazione2.exceptions.NotFoundException;
 import it.polito.ai.esercitazione2.repositories.LineRepository;
 import it.polito.ai.esercitazione2.repositories.ReservationRepository;
 import it.polito.ai.esercitazione2.repositories.StopRepository;
 import it.polito.ai.esercitazione2.viewmodels.ReservationDTO;
 import it.polito.ai.esercitazione2.viewmodels.ReservationsDTO;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +29,11 @@ public class ReservationService {
     @Autowired
     private LineRepository lineRepository;
 
-    public ReservationsDTO getReservations(String lineName, Date date) {
+    public ReservationsDTO getReservations(String lineName, Date date) throws NotFoundException {
         /* Get the requested line */
         Line line = lineRepository.getByName(lineName);
         if(line == null) {
-            return null;
+            throw new NotFoundException("Line " + lineName + " not found");
         }
 
         ReservationsDTO reservationsDTO = new ReservationsDTO();
@@ -57,23 +61,23 @@ public class ReservationService {
         return reservationsDTO;
     }
 
-    public Long addReservation(ReservationDTO reservationDTO, String lineName, Date date) {
-        Stop stop = stopRepository.findById(reservationDTO.getStopId()).orElse(null);
-        if(stop == null) {
-            return null;
-        }
-
+    public Long addReservation(ReservationDTO reservationDTO, String lineName, Date date) throws BadRequestException, NotFoundException {
         Line line = lineRepository.getByName(lineName);
         if(line == null) {
-            return null;
+            throw new NotFoundException("Line " + lineName + " not found");
+        }
+
+        Stop stop = stopRepository.findById(reservationDTO.getStopId()).orElse(null);
+        if(stop == null) {
+            throw new BadRequestException("Unknown stop with id " + reservationDTO.getStopId());
         }
 
         if(!line.equals(stop.getLine())) {
-            return null;
+            throw new BadRequestException("Stop with id " + reservationDTO.getStopId() + "doesn't belong to line " + lineName);
         }
 
         if(reservationDTO.getDirection().charAt(0) != stop.getDirection().charValue()) {
-            return null;
+            throw new BadRequestException("The requested stop isn't available for the requested direction");
         }
 
         Reservation reservation = new Reservation();
@@ -86,25 +90,23 @@ public class ReservationService {
         return reservation.getId();
     }
 
-    public boolean updateReservation(String lineName, Date date, Long reservationId, ReservationDTO reservationDTO) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
-        if(reservation == null) {
-            return false;
-        }
-
-        if(!date.equals(reservation.getDate()) || !reservation.getStop().getLine().getName().equals(lineName)) {
-            return false;
-        }
+    public void updateReservation(String lineName, Date date, Long reservationId, ReservationDTO reservationDTO) throws NotFoundException, BadRequestException {
+        Reservation reservation = getReservationFromUri(lineName, date, reservationId);
 
         /* Update the stop */
         if(!reservationDTO.getStopId().equals(reservation.getStop().getId())) {
             Stop stop = stopRepository.findById(reservationDTO.getStopId()).orElse(null);
+
             if(stop == null) {
-                return false;
+                throw new BadRequestException("Unknown stop with id " + reservationDTO.getStopId());
+            }
+
+            if(!stop.getLine().getName().equals(lineName)) {
+                throw new BadRequestException("Stop with id " + reservationDTO.getStopId() + "doesn't belong to line " + lineName);
             }
 
             if(reservationDTO.getDirection().charAt(0) != stop.getDirection().charValue()) {
-                return false;
+                throw new BadRequestException("The requested stop isn't available for the requested direction");
             }
 
             reservation.setStop(stop);
@@ -115,33 +117,19 @@ public class ReservationService {
 
         reservationRepository.save(reservation);
 
-        return true;
+        return;
     }
 
-    public boolean deleteReservation(String lineName, Date date, Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
-        if(reservation == null) {
-            return false;
-        }
-
-        if(!date.equals(reservation.getDate()) || !reservation.getStop().getLine().getName().equals(lineName)) {
-            return false;
-        }
+    public void deleteReservation(String lineName, Date date, Long reservationId) throws NotFoundException {
+        Reservation reservation = getReservationFromUri(lineName, date, reservationId);
 
         reservationRepository.delete(reservation);
 
-        return true;
+        return;
     }
 
-    public ReservationDTO getReservation(String lineName, Date date, Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
-        if(reservation == null) {
-            return null;
-        }
-
-        if(!date.equals(reservation.getDate()) || !reservation.getStop().getLine().getName().equals(lineName)) {
-            return null;
-        }
+    public ReservationDTO getReservation(String lineName, Date date, Long reservationId) throws NotFoundException {
+        Reservation reservation = getReservationFromUri(lineName, date, reservationId);
 
         ReservationDTO reservationDTO = new ReservationDTO();
         reservationDTO.setId(reservation.getId());
@@ -150,5 +138,19 @@ public class ReservationService {
         reservationDTO.setStudent(reservation.getStudent());
 
         return reservationDTO;
+    }
+
+    private Reservation getReservationFromUri(String lineName, Date date, Long reservationId) throws NotFoundException {
+        Reservation reservation = reservationRepository.findById(reservationId).orElse(null);
+
+        if(reservation == null) {
+            throw new NotFoundException("Reservation with id " + reservationId + " not found");
+        }
+
+        if(!date.equals(reservation.getDate()) || !reservation.getStop().getLine().getName().equals(lineName)) {
+            throw new NotFoundException("Reservation with id " + reservationId + " not found");
+        }
+
+        return reservation;
     }
 }

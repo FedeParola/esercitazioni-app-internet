@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.polito.ai.esercitazione2.entities.Line;
 import it.polito.ai.esercitazione2.entities.Stop;
+import it.polito.ai.esercitazione2.exceptions.NotFoundException;
 import it.polito.ai.esercitazione2.repositories.LineRepository;
 import it.polito.ai.esercitazione2.repositories.StopRepository;
 import it.polito.ai.esercitazione2.viewmodels.LineDTO;
@@ -48,11 +49,11 @@ public class LineService implements InitializingBean {
     }
 
     /* WARNING: needs to be Transactional? line and stops are retrieved in 2 different queries*/
-    public LineDTO getLine(String lineName) {
+    public LineDTO getLine(String lineName) throws NotFoundException {
         /* Get requested line */
         Line line = lineRepository.getByName(lineName);
         if(line == null) {
-            return null;
+            throw new NotFoundException("Line " + lineName + " not found");
         }
 
         LineDTO lineDTO = new LineDTO();
