@@ -48,7 +48,7 @@ public class ReservationController {
     }
 
     @RequestMapping(value = "/reservations/{lineName}/{date}/{reservationId}", method = RequestMethod.PUT)
-    public void updateReservation(@PathVariable String lineName, @PathVariable Date date, @PathVariable Long reservationId,
+    public void updateReservation(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date, @PathVariable Long reservationId,
                                   @RequestBody ReservationDTO reservation) throws NotFoundException, BadRequestException {
         reservationService.updateReservation(lineName, date, reservationId, reservation);
 

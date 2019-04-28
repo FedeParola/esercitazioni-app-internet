@@ -16,12 +16,15 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
 @Service
 public class ReservationService {
-    private static final Logger log = LoggerFactory.getLogger(LineService.class);
+    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
     @Autowired
     private StopRepository stopRepository;
     @Autowired
@@ -61,6 +64,7 @@ public class ReservationService {
         return reservationsDTO;
     }
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addReservation(ReservationDTO reservationDTO, String lineName, Date date) throws BadRequestException, NotFoundException {
         Line line = lineRepository.getByName(lineName);
         if(line == null) {
@@ -90,6 +94,7 @@ public class ReservationService {
         return reservation.getId();
     }
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public void updateReservation(String lineName, Date date, Long reservationId, ReservationDTO reservationDTO) throws NotFoundException, BadRequestException {
         Reservation reservation = getReservationFromUri(lineName, date, reservationId);
 
@@ -120,6 +125,7 @@ public class ReservationService {
         return;
     }
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public void deleteReservation(String lineName, Date date, Long reservationId) throws NotFoundException {
         Reservation reservation = getReservationFromUri(lineName, date, reservationId);
 

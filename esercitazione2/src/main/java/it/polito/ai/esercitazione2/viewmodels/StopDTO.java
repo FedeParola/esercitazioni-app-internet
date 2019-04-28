@@ -14,6 +14,7 @@ public class StopDTO {
     @NotNull
     @Min(0)
     private Integer position;
+    @NotNull
     @Pattern(regexp = "(([01][0-9])|(2[0-4])):[0-5][0-9]")
     private String time;
 }

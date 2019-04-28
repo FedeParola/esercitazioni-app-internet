@@ -14,8 +14,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -48,7 +50,6 @@ public class LineService implements InitializingBean {
         return names;
     }
 
-    /* WARNING: needs to be Transactional? line and stops are retrieved in 2 different queries*/
     public LineDTO getLine(String lineName) throws NotFoundException {
         /* Get requested line */
         Line line = lineRepository.getByName(lineName);
@@ -141,7 +142,7 @@ public class LineService implements InitializingBean {
         }
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     protected void addLine(LineDTO lineDTO) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("H:m");
 
