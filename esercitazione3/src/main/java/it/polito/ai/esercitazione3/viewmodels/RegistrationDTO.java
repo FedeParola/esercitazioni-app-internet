@@ -8,10 +8,6 @@ import javax.validation.constraints.Size;
 
 @Data
 public class RegistrationDTO {
-    @Size(min=1,max=255)
-    private String name;
-    @Size(min=1,max=255)
-    private String surname;
     @Email
     @Size(min=1,max=255)
     private String email;
@@ -19,6 +15,4 @@ public class RegistrationDTO {
     private String pass;
     @Size(min=6,max=32)
     private String confPass;
-    @NotNull
-    private Boolean privacy;
 }

@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -26,9 +27,10 @@ public class User {
     @Column(name = "Confirmed")
     private boolean confirmed;
 
-    @ManyToMany
-    @JoinTable(name="Role",
-            joinColumns = {@JoinColumn(name="Name")},
-            inverseJoinColumns ={@JoinColumn(name="Email")})
-    private List<Role> roles;
+    @Column(name = "Enabled")
+    private boolean enabled;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Builder.Default
+    private List<String> roles = new ArrayList<>();
 }
