@@ -1,11 +1,15 @@
 package it.polito.ai.esercitazione3.controllers;
 
+import it.polito.ai.esercitazione3.exceptions.BadRequestException;
 import it.polito.ai.esercitazione3.repositories.UserRepository;
 import it.polito.ai.esercitazione3.security.jwt.JwtTokenProvider;
 import it.polito.ai.esercitazione3.services.MailService;
+import it.polito.ai.esercitazione3.services.ReservationService;
 import it.polito.ai.esercitazione3.services.UserService;
 import it.polito.ai.esercitazione3.viewmodels.LoginDTO;
 import it.polito.ai.esercitazione3.viewmodels.RegistrationDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +30,11 @@ import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 public class UserController {
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private MailService mailService;
     @Autowired
-    private UserRepository userService;
+    private UserService userService;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -37,33 +42,34 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    @PostMapping(value = "/login", consumes= MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity login(@RequestBody @Valid LoginDTO loginDTO, BindingResult bindingResult){
+    @PostMapping(value = "/login", consumes= MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, String> login(@RequestBody @Valid LoginDTO loginDTO) throws BadRequestException {
+        String email = loginDTO.getEmail();
+        String password = loginDTO.getPassword();
+
         try {
-            String email= loginDTO.getEmail();
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, loginDTO.getPass()));
-            String token = jwtTokenProvider.createToken(email, this.userRepository.findByUsername(email).orElseThrow(() ->
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            String token = jwtTokenProvider.createToken(email, userRepository.findByEmail(email).orElseThrow(() ->
                     new UsernameNotFoundException("Email " + email + "not found")).getRoles());
-            return ok(token);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("token", token);
+
+            return response;
+
         } catch (AuthenticationException e) {
             throw new BadCredentialsException("Invalid email/password supplied");
         }
     }
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void register(@RequestBody @Valid RegistrationDTO registrationDTO){
-//        if(!userService.exists(registrationDTO.getEmail()))
-//        {
-//            if(registrationDTO.getPass().equals(registrationDTO.getConfPass()))
-//            {
-//                if(true /*controlla che le password siano sufficientemente sicure...*/)
-//                {
-//                    /*ma lo registra in condizione di attesa di verifica*/
-//                    userService.register(registrationDTO);
-//                    mailService.sendActivationMail(registrationDTO.getEmail());
-//                }
-//            }
-//        }
+    public void register(@RequestBody @Valid RegistrationDTO registrationDTO) throws BadRequestException {
+        /* Check password strength */
+
+        String uuid = userService.registerUser(registrationDTO);
+
+        //mailService.sendActivationMail(registrationDTO.getEmail(), uuid);
+
         return;
     }
 
