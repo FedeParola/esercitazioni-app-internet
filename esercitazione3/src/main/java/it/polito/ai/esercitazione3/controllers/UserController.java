@@ -1,32 +1,36 @@
 package it.polito.ai.esercitazione3.controllers;
 
 import it.polito.ai.esercitazione3.exceptions.BadRequestException;
+import it.polito.ai.esercitazione3.exceptions.NotFoundException;
 import it.polito.ai.esercitazione3.repositories.UserRepository;
 import it.polito.ai.esercitazione3.security.jwt.JwtTokenProvider;
 import it.polito.ai.esercitazione3.services.MailService;
-import it.polito.ai.esercitazione3.services.ReservationService;
 import it.polito.ai.esercitazione3.services.UserService;
 import it.polito.ai.esercitazione3.viewmodels.LoginDTO;
+import it.polito.ai.esercitazione3.viewmodels.RecoverDTO;
 import it.polito.ai.esercitazione3.viewmodels.RegistrationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
-import javax.print.attribute.standard.Media;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import static org.springframework.http.ResponseEntity.ok;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 public class UserController {
@@ -39,8 +43,6 @@ public class UserController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
-    @Autowired
-    private UserRepository userRepository;
 
     @PostMapping(value = "/login", consumes= MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, String> login(@RequestBody @Valid LoginDTO loginDTO) throws BadRequestException {
@@ -48,9 +50,11 @@ public class UserController {
         String password = loginDTO.getPassword();
 
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
-            String token = jwtTokenProvider.createToken(email, userRepository.findByEmail(email).orElseThrow(() ->
-                    new UsernameNotFoundException("Email " + email + "not found")).getRoles());
+            Authentication auth = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+            List<String> roles = auth.getAuthorities().stream()
+                                                      .map((GrantedAuthority a) -> a.getAuthority())
+                                                      .collect(Collectors.toList());
+            String token = jwtTokenProvider.createToken(email, roles);
 
             Map<String, String> response = new HashMap<>();
             response.put("token", token);
@@ -63,54 +67,55 @@ public class UserController {
     }
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void register(@RequestBody @Valid RegistrationDTO registrationDTO) throws BadRequestException {
-        /* Check password strength */
+    public void register(@RequestBody @Valid RegistrationDTO registrationDTO, HttpServletRequest request) throws BadRequestException {
+        /* Check password confirmation */
+        if (!registrationDTO.getPass().equals(registrationDTO.getConfPass())) {
+            throw new BadRequestException("Password confirmation doesn't match");
+        }
 
         String uuid = userService.registerUser(registrationDTO);
 
-        //mailService.sendActivationMail(registrationDTO.getEmail(), uuid);
+        /* Build the confirmation URL */
+        String requestUrl = request.getRequestURL().toString();
+        String confirmUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/confirm/" + uuid;
+
+        mailService.sendConfirmationMail(registrationDTO.getEmail(), confirmUrl);
 
         return;
     }
 
     @GetMapping(value = "/confirm/{randomUUID}")
-    public void confirm(@PathVariable String randomUUID){
-//        if(true /*randomUUID corrisponde a un utente in corso di verifica e questa non è ancora scaduta*/)
-//        {
-//            userService.activate(/*passo la mail associata al randomUUID*/);
-//            /*restituisci 200 OK*/
-//        }
-//        else
-//        {
-//            /*restituisci 404 NOT FOUND*/
-//        }
+    public void confirm(@PathVariable String randomUUID) throws NotFoundException {
+        userService.confirmUser(randomUUID);
+
         return;
     }
 
     @PostMapping(value = "/recover", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void recover(@RequestBody String mail){
-//        if(userService.exists(mail))
-//        {
-//            mailService.sendRecoverMail(mail);
-//        }
-        return /*200 OK in ogni caso*/;
+    public void recover(@RequestBody String email){
+        if(userService.userExists(email))
+        {
+            //the mail sent must contain a random link (/recover/{randomUUID}-like) to contact for the password change
+            String uuid = UUID.randomUUID().toString();
+            //mailService.sendRecoverMail(email);
+        }
+        return;
     }
 
     @GetMapping(value = "/recover/{randomUUID}")
-    public String getPassChangeForm(@PathVariable String randomUUID){
-        /*creare una pagina html per il cambio della pass nel package resources*/
+    public String getPassChangeForm(@PathVariable String randomUUID, Model m){
+        m.addAttribute("randomUUID", randomUUID);
         return "passChangeForm";
     }
 
     @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void postNewPass(){
-        return;
+    public void postNewPass(@RequestBody @Valid RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
+        String newPass = recoverDTO.getPass();
+        if(newPass.equals(recoverDTO.getConfPass()) /*&& password robuste*/)
+        {
+            userService.tryChangePassword(randomUUID, newPass);
+        }
     }
-
-    /*Tutti gli end-point precedentemente esistenti dovranno essere configurati per essere accessibili solo se viene
-    passato, come intestazione della richiesta, il campo “Authorization: bearer <JWT>” e che il JWT sia valido e non
-    scaduto. In caso contrario risponderanno 401 – Unauthorized. Se dal JWT risulta che l’utente corrente ha un ruolo
-     non consono con la richiesta in corso, risponderà 403 – Forbidden.*/
 
     /*queste URL devono essere accessibili solo al system-admin o all'admin di una linea*/
     @GetMapping(value = "/users")

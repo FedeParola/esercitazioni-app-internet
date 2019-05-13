@@ -4,15 +4,19 @@ import lombok.Data;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Data
 public class RegistrationDTO {
     @Email
-    @Size(min=1,max=255)
+    @Size(min = 1)
+    @NotNull
     private String email;
-    @Size(min=6,max=32)
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{6,32}$", message = "The password must contain at least " +
+            "one uppercase and one lowercase character and a digit and be at least 6 characters long")
+    @NotNull
     private String pass;
-    @Size(min=6,max=32)
+    @NotNull
     private String confPass;
 }

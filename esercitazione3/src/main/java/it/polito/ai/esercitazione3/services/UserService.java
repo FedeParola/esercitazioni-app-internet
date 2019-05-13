@@ -1,9 +1,12 @@
 package it.polito.ai.esercitazione3.services;
 
 import it.polito.ai.esercitazione3.entities.ConfirmationToken;
+import it.polito.ai.esercitazione3.entities.RecoverToken;
 import it.polito.ai.esercitazione3.entities.User;
 import it.polito.ai.esercitazione3.exceptions.BadRequestException;
+import it.polito.ai.esercitazione3.exceptions.NotFoundException;
 import it.polito.ai.esercitazione3.repositories.ConfirmationTokenRepository;
+import it.polito.ai.esercitazione3.repositories.RecoverTokenRepository;
 import it.polito.ai.esercitazione3.repositories.UserRepository;
 import it.polito.ai.esercitazione3.viewmodels.RegistrationDTO;
 import org.slf4j.Logger;
@@ -38,6 +41,8 @@ public class UserService implements InitializingBean, UserDetailsService {
     @Autowired
     private ConfirmationTokenRepository confirmationTokenRepository;
     @Autowired
+    private RecoverTokenRepository recoverTokenRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EntityManager entityManager;
@@ -45,7 +50,7 @@ public class UserService implements InitializingBean, UserDetailsService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public String registerUser(RegistrationDTO registrationDTO) throws BadRequestException {
         /* Check duplicate user */
-        User user = userRepository.findByEmail(registrationDTO.getEmail()).orElse(null);
+        User user = userRepository.findById(registrationDTO.getEmail()).orElse(null);
         if (user != null) {
             if (user.isEnabled()) {
                 throw new BadRequestException("Email " + registrationDTO.getEmail() + " already registered");
@@ -53,14 +58,15 @@ public class UserService implements InitializingBean, UserDetailsService {
             /* Check if user isn't confirmed and confirmation is expired */
             } else {
                 ConfirmationToken token = confirmationTokenRepository.findByUser(user).orElse(null);
+
                 /* User disabled for other reason or waiting for confirmation */
                 if (token == null || !token.isExpired()) {
                     throw new BadRequestException("Email " + registrationDTO.getEmail() + " already registered");
 
                 /* Expired token, remove user and token and proceed with registration */
                 } else {
-                    userRepository.delete(user);
                     confirmationTokenRepository.delete(token);
+                    userRepository.delete(user);
                 }
             }
         }
@@ -75,7 +81,7 @@ public class UserService implements InitializingBean, UserDetailsService {
                 .build();
         userRepository.save(user);
 
-        /*Mandatory, otherwise the system tries to persist the token before the user and returns an error */
+        /* Necessary, otherwise the system tries to persist the token before the user and returns an error */
         entityManager.flush();
 
         /* Generate and store confirmation token */
@@ -87,6 +93,57 @@ public class UserService implements InitializingBean, UserDetailsService {
         confirmationTokenRepository.save(token);
 
         return uuid;
+    }
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    public void confirmUser(String uuid) throws NotFoundException {
+        ConfirmationToken token = confirmationTokenRepository.findByUuid(uuid).orElseThrow(() -> new NotFoundException());
+
+        User user = token.getUser();
+
+        if (token.isExpired()) {
+            /* Delete token and user */
+            confirmationTokenRepository.delete(token);
+            userRepository.delete(user);
+
+            throw new NotFoundException();
+        }
+
+        /* Enable the user */
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        /* Delete the token */
+        confirmationTokenRepository.delete(token);
+
+        return;
+    }
+
+    public void tryChangePassword(String UUID, String newPass) throws NotFoundException {
+        RecoverToken token = recoverTokenRepository.findByUuid(UUID).orElse(null);
+
+        if (token == null)
+        {
+            throw new NotFoundException("Recover token with UUID " + UUID + " doesn't exist!");
+        }
+        else if (token.isExpired())
+        {
+            recoverTokenRepository.delete(token);
+            throw new NotFoundException("Recover token with UUID " + UUID + " has expired!");
+        }
+        else
+        {
+            User user = token.getUser();
+            user.setPassword(newPass);
+            userRepository.save(user);
+            recoverTokenRepository.delete(token);
+        }
+
+        return;
+    }
+
+    public boolean userExists(String email){
+        return userRepository.existsById(email);
     }
 
     @Override
@@ -121,7 +178,7 @@ public class UserService implements InitializingBean, UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(s).orElseThrow(() -> new UsernameNotFoundException("Email " + s + " not found"));
+        User user = userRepository.findById(s).orElseThrow(() -> new UsernameNotFoundException("Email " + s + " not found"));
 
         /* Retrieve list of authorities from roles */
         List<SimpleGrantedAuthority> authList = user.getRoles().stream()
