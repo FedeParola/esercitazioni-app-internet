@@ -1,11 +1,13 @@
 package it.polito.ai.esercitazione3.controllers;
 
 import it.polito.ai.esercitazione3.exceptions.BadRequestException;
+import it.polito.ai.esercitazione3.exceptions.ForbiddenException;
 import it.polito.ai.esercitazione3.exceptions.NotFoundException;
 import it.polito.ai.esercitazione3.repositories.UserRepository;
 import it.polito.ai.esercitazione3.security.jwt.JwtTokenProvider;
 import it.polito.ai.esercitazione3.services.MailService;
 import it.polito.ai.esercitazione3.services.UserService;
+import it.polito.ai.esercitazione3.viewmodels.AuthorizationDTO;
 import it.polito.ai.esercitazione3.viewmodels.LoginDTO;
 import it.polito.ai.esercitazione3.viewmodels.RecoverDTO;
 import it.polito.ai.esercitazione3.viewmodels.RegistrationDTO;
@@ -19,17 +21,19 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -109,30 +113,47 @@ public class UserController {
         return;
     }
 
-    @GetMapping(value = "/recover/{randomUUID}")
-    public String getPassChangeForm(@PathVariable String randomUUID, Model m){
-        m.addAttribute("randomUUID", randomUUID);
-        return "passChangeForm";
+    @GetMapping(value = "/recover/{randomUUID}", produces = MediaType.TEXT_HTML_VALUE)
+    public ModelAndView getPassChangeForm(@PathVariable String randomUUID){
+        ModelAndView response = new ModelAndView();
+        response.getModel().put("randomUUID", randomUUID);
+        response.setViewName("passChangeForm");
+        return response;
     }
 
-    @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void postNewPass(@RequestBody @Valid RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
+    @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public void postNewPass(RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
         String newPass = recoverDTO.getPass();
+        String confPass = recoverDTO.getConfPass();
         Matcher m = pattern.matcher(newPass);
-        if(newPass.equals(recoverDTO.getConfPass()) && m.matches())
-        {
-            userService.tryChangePassword(randomUUID, newPass);
+
+        if (newPass == null || confPass == null || !(newPass.equals(recoverDTO.getConfPass()) && m.matches())) {
+            throw new NotFoundException();
         }
+
+        userService.tryChangePassword(randomUUID, newPass);
     }
 
-    /*queste URL devono essere accessibili solo al system-admin o all'admin di una linea*/
-    @GetMapping(value = "/users")
-    public void getUsers(){
-        return;
+    @GetMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<String> getUsers(@RequestParam("page") Optional<Integer> page, @RequestParam("size") Optional<Integer> size)
+            throws BadRequestException {
+        return userService.getAllUsers(page, size);
     }
 
     @PutMapping(value = "/users/{userID}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void modifyUserRole(){
+    public void modifyUserRole(@PathVariable String userID,@RequestBody @Valid AuthorizationDTO authorizationDTO)
+            throws BadRequestException, ForbiddenException {
+        //retrieve username of currently logged user
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if(authorizationDTO.getAction().equals("GRANT")){
+            userService.authorizeUser(userID, authorizationDTO, loggedUser);
+        }else if(authorizationDTO.getAction().equals("REVOKE")){
+            userService.revokeUser(userID,authorizationDTO,loggedUser);
+        }else{
+            throw new BadRequestException();
+        }
+
         return;
     }
 

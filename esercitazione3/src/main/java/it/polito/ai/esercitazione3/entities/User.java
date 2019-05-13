@@ -30,4 +30,8 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     @Builder.Default
     private List<String> roles = new ArrayList<>();
+
+    @Builder.Default
+    @ManyToMany
+    private List<Line> lines = new ArrayList<>();
 }
