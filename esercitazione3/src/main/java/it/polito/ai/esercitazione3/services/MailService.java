@@ -15,6 +15,10 @@ public class MailService {
         sendMessage(to, "Pedibus account confirmation", "Click the link below to confirm your Pedibus account:\n" + confirmUrl);
     }
 
+    public void sendRecoverMail(String to, String recoverUrl) {
+        sendMessage(to, "Pedibus account password recovery", "Click the link below to recover your password:\n" + recoverUrl);
+    }
+
     @Async
     public void sendMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -23,5 +27,4 @@ public class MailService {
         message.setText(text);
         mailSender.send(message);
     }
-
 }

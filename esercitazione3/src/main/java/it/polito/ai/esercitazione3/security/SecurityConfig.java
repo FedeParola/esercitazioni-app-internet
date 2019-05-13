@@ -43,7 +43,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
                 .authorizeRequests()
                 .antMatchers("/h2-console/**").permitAll() // Remove before submit  (allows h2-console access)
-                .antMatchers("/login", "/register", "/confirm/*", "/recover/*").permitAll()
+                .antMatchers("/login", "/register", "/confirm/*", "/recover", "/recover/*").permitAll()
                 .antMatchers("/users/*").hasRole("")
                 .anyRequest().authenticated()
         .and().logout()

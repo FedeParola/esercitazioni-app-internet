@@ -30,10 +30,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @RestController
 public class UserController {
+    private static final Pattern pattern = Pattern.compile("^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{6,32}$");
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private MailService mailService;
@@ -92,13 +95,17 @@ public class UserController {
     }
 
     @PostMapping(value = "/recover", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void recover(@RequestBody String email){
-        if(userService.userExists(email))
+    public void recover(@RequestBody Map<String, String> emailMap, HttpServletRequest request){
+
+        String email = emailMap.get("email");
+        String uuid = userService.createRecoverToken(email);
+        if(uuid != null)
         {
-            //the mail sent must contain a random link (/recover/{randomUUID}-like) to contact for the password change
-            String uuid = UUID.randomUUID().toString();
-            //mailService.sendRecoverMail(email);
+            String requestUrl = request.getRequestURL().toString();
+            String recoverUrl = requestUrl.substring(0, requestUrl.lastIndexOf(request.getRequestURI())) + "/recover/" + uuid;
+            mailService.sendRecoverMail(email, recoverUrl);
         }
+
         return;
     }
 
@@ -111,7 +118,8 @@ public class UserController {
     @PostMapping(value = "/recover/{randomUUID}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void postNewPass(@RequestBody @Valid RecoverDTO recoverDTO, @PathVariable String randomUUID) throws NotFoundException {
         String newPass = recoverDTO.getPass();
-        if(newPass.equals(recoverDTO.getConfPass()) /*&& password robuste*/)
+        Matcher m = pattern.matcher(newPass);
+        if(newPass.equals(recoverDTO.getConfPass()) && m.matches())
         {
             userService.tryChangePassword(randomUUID, newPass);
         }

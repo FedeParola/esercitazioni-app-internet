@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserService implements InitializingBean, UserDetailsService {
     private static final long CONF_TOKEN_EXPIRY_HOURS = 24;
+    private static final long RECOVER_TOKEN_EXPIRY_MIN = 30;
     private static final Logger log = LoggerFactory.getLogger(LineService.class);
     @Autowired
     private UserRepository userRepository;
@@ -47,7 +48,7 @@ public class UserService implements InitializingBean, UserDetailsService {
     @Autowired
     private EntityManager entityManager;
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public String registerUser(RegistrationDTO registrationDTO) throws BadRequestException {
         /* Check duplicate user */
         User user = userRepository.findById(registrationDTO.getEmail()).orElse(null);
@@ -95,7 +96,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         return uuid;
     }
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void confirmUser(String uuid) throws NotFoundException {
         ConfirmationToken token = confirmationTokenRepository.findByUuid(uuid).orElseThrow(() -> new NotFoundException());
 
@@ -119,14 +120,12 @@ public class UserService implements InitializingBean, UserDetailsService {
         return;
     }
 
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void tryChangePassword(String UUID, String newPass) throws NotFoundException {
-        RecoverToken token = recoverTokenRepository.findByUuid(UUID).orElse(null);
+        RecoverToken token = recoverTokenRepository.findByUuid(UUID)
+                .orElseThrow(()->new NotFoundException("Recover token with UUID " + UUID + " doesn't exist!"));
 
-        if (token == null)
-        {
-            throw new NotFoundException("Recover token with UUID " + UUID + " doesn't exist!");
-        }
-        else if (token.isExpired())
+        if (token.isExpired())
         {
             recoverTokenRepository.delete(token);
             throw new NotFoundException("Recover token with UUID " + UUID + " has expired!");
@@ -140,10 +139,6 @@ public class UserService implements InitializingBean, UserDetailsService {
         }
 
         return;
-    }
-
-    public boolean userExists(String email){
-        return userRepository.existsById(email);
     }
 
     @Override
@@ -162,11 +157,12 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         userRepository.save(user);
 
-        for(int i=1; i<5;i++){
-            roles= new ArrayList<>();
+        //PER DEBUG
+        for(int i=1; i<5;i++) {
+            roles = new ArrayList<>();
             roles.add("USER");
             user = User.builder()
-                    .email("user"+i+"@email.it")
+                    .email("user" + i + "@email.it")
                     .enabled(true)
                     .roles(roles)
                     .password(passwordEncoder.encode("qwerty"))
@@ -174,6 +170,17 @@ public class UserService implements InitializingBean, UserDetailsService {
 
             userRepository.save(user);
         }
+
+        roles=new ArrayList<>();
+        roles.add("USER");
+        user = User.builder()
+                .email("andpav@hotmail.it")
+                .enabled(true)
+                .roles(roles)
+                .password(passwordEncoder.encode("qwerty"))
+                .build();
+
+        userRepository.save(user);
     }
 
     @Override
@@ -187,5 +194,24 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), user.isEnabled(),
                 true, true, true, authList);
+    }
+
+    public String createRecoverToken(String email) {
+        String uuid = UUID.randomUUID().toString();
+
+        RecoverToken token = new RecoverToken();
+        User u = userRepository.findById(email).orElse(null);
+
+        if(u == null)
+        {
+             return null;
+        }
+
+        token.setUser(u);
+        token.setUuid(uuid);
+        token.setExpiryDate(new Timestamp(System.currentTimeMillis() + RECOVER_TOKEN_EXPIRY_MIN*60*1000));
+        recoverTokenRepository.save(token);
+
+        return uuid;
     }
 }
