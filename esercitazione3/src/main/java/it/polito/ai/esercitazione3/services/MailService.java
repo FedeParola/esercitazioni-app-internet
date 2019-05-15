@@ -11,16 +11,17 @@ public class MailService {
     @Autowired
     private JavaMailSender mailSender;
 
+    @Async
     public void sendConfirmationMail(String to, String confirmUrl) {
         sendMessage(to, "Pedibus account confirmation", "Click the link below to confirm your Pedibus account:\n" + confirmUrl);
     }
 
+    @Async
     public void sendRecoverMail(String to, String recoverUrl) {
         sendMessage(to, "Pedibus account password recovery", "Click the link below to recover your password:\n" + recoverUrl);
     }
 
-    @Async
-    public void sendMessage(String to, String subject, String text) {
+    private void sendMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject(subject);

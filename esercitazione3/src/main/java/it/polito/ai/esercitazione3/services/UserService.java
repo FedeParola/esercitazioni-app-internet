@@ -156,7 +156,7 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         } else {
             User user = token.getUser();
-            user.setPassword(newPass);
+            user.setPassword(passwordEncoder.encode(newPass));
             userRepository.save(user);
             recoverTokenRepository.delete(token);
         }
@@ -182,7 +182,6 @@ public class UserService implements InitializingBean, UserDetailsService {
         return users;
     }
 
-    @SuppressWarnings("Duplicates")
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void grantUser(String userID, AuthorizationDTO authorizationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
         User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
@@ -200,7 +199,6 @@ public class UserService implements InitializingBean, UserDetailsService {
         userRepository.save(changingUser);
     }
 
-    @SuppressWarnings("Duplicates")
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void revokeUser(String userID, AuthorizationDTO authorizationDTO, UserDetails loggedUser)
             throws BadRequestException, ForbiddenException {
@@ -264,26 +262,6 @@ public class UserService implements InitializingBean, UserDetailsService {
 
             userRepository.save(user);
         }
-
-        roles=new ArrayList<>();
-        roles.add("ROLE_USER");
-        user = User.builder()
-                .email("andpav@hotmail.it")
-                .enabled(true)
-                .roles(roles)
-                .password(passwordEncoder.encode("qwerty"))
-                .build();
-        userRepository.save(user);
-
-        roles=new ArrayList<>();
-        roles.add("ROLE_USER");
-        user = User.builder()
-                .email("fede.parola@hotmail.it")
-                .enabled(true)
-                .roles(roles)
-                .password(passwordEncoder.encode("qwerty"))
-                .build();
-        userRepository.save(user);
     }
 
     @Override
