@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,6 +47,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/login", "/register", "/confirm/*", "/recover", "/recover/*").permitAll()
                 .antMatchers("/users").hasAnyRole("SYSTEM-ADMIN", "ADMIN")
                 .antMatchers("/users/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN")
+                .antMatchers("/lines").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
+                .antMatchers("/lines/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
+                .antMatchers(HttpMethod.GET,"/reservations/*/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN")
+                .antMatchers(HttpMethod.POST,"/reservations/*/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
+                .antMatchers(HttpMethod.PUT,"/reservations/*/*/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
+                .antMatchers(HttpMethod.DELETE,"/reservations/*/*/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
+                .antMatchers(HttpMethod.GET,"/reservations/*/*/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
                 .anyRequest().authenticated()
         .and().logout()
         .and().exceptionHandling()

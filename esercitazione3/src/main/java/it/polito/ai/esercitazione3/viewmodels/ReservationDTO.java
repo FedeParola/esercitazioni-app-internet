@@ -17,4 +17,5 @@ public class ReservationDTO {
     @NotNull
     @Pattern(regexp = "O|R")
     private String direction;
+    private String email;
 }

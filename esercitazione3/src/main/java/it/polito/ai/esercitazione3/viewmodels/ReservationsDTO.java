@@ -13,6 +13,16 @@ public class ReservationsDTO {
     @Data
     public static class StopReservations {
         private String stopName;
-        private final List<String> students = new ArrayList<>();
+        private final List<UserStudentPair> students = new ArrayList<>();
+
+        public void addStudent(String user, String student) {
+            students.add(new UserStudentPair(user, student));
+        }
+
+        @Data
+        public class UserStudentPair {
+            private final String user;
+            private final String student;
+        }
     }
 }

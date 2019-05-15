@@ -11,6 +11,7 @@ import it.polito.ai.esercitazione3.repositories.ConfirmationTokenRepository;
 import it.polito.ai.esercitazione3.repositories.LineRepository;
 import it.polito.ai.esercitazione3.repositories.RecoverTokenRepository;
 import it.polito.ai.esercitazione3.repositories.UserRepository;
+import it.polito.ai.esercitazione3.security.AuthorizationManager;
 import it.polito.ai.esercitazione3.viewmodels.AuthorizationDTO;
 import it.polito.ai.esercitazione3.viewmodels.RegistrationDTO;
 import org.slf4j.Logger;
@@ -181,68 +182,39 @@ public class UserService implements InitializingBean, UserDetailsService {
         return users;
     }
 
+    @SuppressWarnings("Duplicates")
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
-    public void authorizeUser(String userID, AuthorizationDTO authorizationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
-        Optional<User> currentUser=userRepository.findById(loggedUser.getUsername()); //get the current user from db
-        Optional<User> changingUser=userRepository.findById(userID); //get the user to change from db
-        List<String> userLinesNames = new ArrayList<>(); //contains the list of currentUser lines if ROLE_ADMIN
-        List<String> loggedUserAuthorities=loggedUser.getAuthorities().stream()
-                .map((s) -> ((GrantedAuthority) s).getAuthority())
-                .collect(Collectors.toList());
+    public void grantUser(String userID, AuthorizationDTO authorizationDTO, UserDetails loggedUser) throws BadRequestException, ForbiddenException {
+        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+        User changingUser=userRepository.findById(userID).orElseThrow(() -> new BadRequestException());
 
-        if(currentUser.isPresent()){
-            for(Line l : currentUser.get().getLines()){
-                userLinesNames.add(l.getName());
-            }
+
+        AuthorizationManager.authorizeLineAccess(currentUser, lineRepository.getByName(authorizationDTO.getLineName()));
+
+        //check if not already ADMIN of another Line
+        if(!changingUser.getRoles().contains("ROLE_ADMIN")){
+            changingUser.getRoles().add("ROLE_ADMIN");
         }
+        changingUser.getLines().add(lineRepository.getByName(authorizationDTO.getLineName()));
 
-        if(loggedUserAuthorities.contains("ROLE_SYSTEM-ADMIN") || userLinesNames.contains(authorizationDTO.getLineName())) {
-            if(changingUser.isPresent()){
-                //check if not already ADMIN of another Line
-                if(!changingUser.get().getRoles().contains("ROLE_ADMIN")){
-                    changingUser.get().getRoles().add("ROLE_ADMIN");
-                }
-                changingUser.get().getLines().add(lineRepository.getByName(authorizationDTO.getLineName()));
-
-                userRepository.save(changingUser.get());
-            }else{
-                throw new BadRequestException();
-            }
-        }else{
-            throw new ForbiddenException();
-        }
+        userRepository.save(changingUser);
     }
 
+    @SuppressWarnings("Duplicates")
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public void revokeUser(String userID, AuthorizationDTO authorizationDTO, UserDetails loggedUser)
             throws BadRequestException, ForbiddenException {
-        Optional<User> currentUser=userRepository.findById(loggedUser.getUsername()); //get the current user from db
-        Optional<User> changingUser=userRepository.findById(userID); //get the user to change from db
-        List<String> userLinesNames = new ArrayList<>(); //contains the list of currentUser lines if ROLE_ADMIN
-        List<String> loggedUserAuthorities=loggedUser.getAuthorities().stream()
-                .map((s) -> ((GrantedAuthority) s).getAuthority())
-                .collect(Collectors.toList());
+        User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException());
+        User changingUser=userRepository.findById(userID).orElseThrow(() -> new BadRequestException());
 
-        if(currentUser.isPresent()){
-            for(Line l : currentUser.get().getLines()){
-                userLinesNames.add(l.getName());
-            }
+        AuthorizationManager.authorizeLineAccess(currentUser, lineRepository.getByName(authorizationDTO.getLineName()));
+
+        if(changingUser.getLines().size()==1){
+            changingUser.getRoles().remove("ROLE_ADMIN");
         }
+        changingUser.getLines().remove(lineRepository.getByName(authorizationDTO.getLineName()));
 
-        if(loggedUserAuthorities.contains("ROLE_SYSTEM-ADMIN") || userLinesNames.contains(authorizationDTO.getLineName())) {
-            if (changingUser.isPresent()) {
-                if(changingUser.get().getLines().size()==1){
-                    changingUser.get().getRoles().remove("ROLE_ADMIN");
-                }
-                changingUser.get().getLines().remove(lineRepository.getByName(authorizationDTO.getLineName()));
-
-                userRepository.save(changingUser.get());
-            }else{
-                throw new BadRequestException();
-            }
-        }else{
-            throw new ForbiddenException();
-        }
+        userRepository.save(changingUser);
     }
 
     @Override
@@ -267,6 +239,7 @@ public class UserService implements InitializingBean, UserDetailsService {
         roles=new ArrayList<>();
         lines=new ArrayList<>();
         roles.add("ROLE_ADMIN");
+        roles.add("ROLE_USER");
         lines.add(lineRepository.getByName("Line1"));
         user = User.builder()
                 .email("user1@email.it")

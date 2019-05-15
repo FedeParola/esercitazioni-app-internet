@@ -1,6 +1,7 @@
 package it.polito.ai.esercitazione3.controllers;
 
 import it.polito.ai.esercitazione3.exceptions.BadRequestException;
+import it.polito.ai.esercitazione3.exceptions.ForbiddenException;
 import it.polito.ai.esercitazione3.exceptions.NotFoundException;
 import it.polito.ai.esercitazione3.services.ReservationService;
 import it.polito.ai.esercitazione3.viewmodels.ReservationDTO;
@@ -9,6 +10,8 @@ import it.polito.ai.esercitazione3.viewmodels.ReservationsDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +27,10 @@ public class ReservationController {
 
     @RequestMapping(value = "/reservations/{lineName}/{date}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ReservationsDTO getReservations(@PathVariable String lineName,
-                                           @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) throws NotFoundException {
-        return reservationService.getReservations(lineName, date);
+                                           @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date) throws NotFoundException, BadRequestException, ForbiddenException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return reservationService.getReservations(lineName, date, loggedUser);
     }
 
     @RequestMapping(value = "/reservations/{lineName}/{date}", method = RequestMethod.POST,
@@ -33,6 +38,8 @@ public class ReservationController {
     public Long createReservation(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
                                   @RequestBody @Valid ReservationDTO reservation, BindingResult bindingResult,
                                   HttpServletResponse response) throws BadRequestException, NotFoundException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         if(bindingResult.hasErrors()) {
             StringBuilder errMsg = new StringBuilder("Invalid format of the request body:");
             for (FieldError err : bindingResult.getFieldErrors()) {
@@ -41,7 +48,7 @@ public class ReservationController {
             throw new BadRequestException(errMsg.toString());
         }
 
-        Long reservationId = reservationService.addReservation(reservation, lineName, date);
+        Long reservationId = reservationService.addReservation(reservation, lineName, date, loggedUser);
         response.setStatus(HttpServletResponse.SC_CREATED);
 
         return reservationId;
@@ -49,16 +56,18 @@ public class ReservationController {
 
     @RequestMapping(value = "/reservations/{lineName}/{date}/{reservationId}", method = RequestMethod.PUT)
     public void updateReservation(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date, @PathVariable Long reservationId,
-                                  @RequestBody ReservationDTO reservation) throws NotFoundException, BadRequestException {
-        reservationService.updateReservation(lineName, date, reservationId, reservation);
+                                  @RequestBody ReservationDTO reservation) throws NotFoundException, BadRequestException, ForbiddenException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        reservationService.updateReservation(lineName, date, reservationId, reservation, loggedUser);
 
         return;
     }
 
     @RequestMapping(value = "/reservations/{lineName}/{date}/{reservationId}", method = RequestMethod.DELETE)
     public void deleteReservation(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
-                                  @PathVariable Long reservationId) throws NotFoundException {
-        reservationService.deleteReservation(lineName, date, reservationId);
+                                  @PathVariable Long reservationId) throws NotFoundException, BadRequestException, ForbiddenException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        reservationService.deleteReservation(lineName, date, reservationId, loggedUser);
 
         return;
     }
@@ -67,7 +76,8 @@ public class ReservationController {
                     produces = MediaType.APPLICATION_JSON_VALUE)
     public ReservationDTO getReservation(@PathVariable String lineName,
                                          @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
-                                         @PathVariable Long reservationId) throws NotFoundException {
-        return reservationService.getReservation(lineName, date, reservationId);
+                                         @PathVariable Long reservationId) throws NotFoundException, ForbiddenException, BadRequestException {
+        UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return reservationService.getReservation(lineName, date, reservationId, loggedUser);
     }
 }

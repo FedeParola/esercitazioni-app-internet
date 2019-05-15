@@ -22,4 +22,7 @@ public class Reservation {
     @ManyToOne
     @JoinColumn(name = "StopId", nullable = false)
     private Stop stop;
+
+    @ManyToOne
+    private User user;
 }

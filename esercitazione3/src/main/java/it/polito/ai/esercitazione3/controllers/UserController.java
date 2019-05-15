@@ -147,7 +147,7 @@ public class UserController {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if(authorizationDTO.getAction().equals("GRANT")){
-            userService.authorizeUser(userID, authorizationDTO, loggedUser);
+            userService.grantUser(userID, authorizationDTO, loggedUser);
         }else if(authorizationDTO.getAction().equals("REVOKE")){
             userService.revokeUser(userID,authorizationDTO,loggedUser);
         }else{
