@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import {PageEvent} from '@angular/material';
+import {RoutesService} from './routes.service';
+
 
  @Component({
    selector: 'app-root',
@@ -7,15 +10,24 @@ import { Component } from '@angular/core';
  })
  export class AppComponent {
    title = 'es4';
+   routes: Object[];
+
+   pageCount: number;
+   pageSize: number;
+   pageEvent: PageEvent;
+
+  constructor(private routesService: RoutesService){}
 
    ngOnInit() {
-    console.log("on init funziona")
+    this.routes=this.routesService.getRoutes();
+    this.pageCount=this.routes.length;
+    this.pageSize=1;
   }
    
-  toggle = true;
-   onStudentClick(){
-    this.toggle = !this.toggle;
-  }
+   onChildClick(child){
+     child.present ? child.present = false : child.present = true;
+   }
+
  }
 
  

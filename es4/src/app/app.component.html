@@ -1,34 +1,27 @@
 <!--The content below is only a placeholder and can be replaced.-->
 <mat-card class="example-card">
   <mat-card-header>
-      <mat-card-title>Presenze</mat-card-title>
-      <mat-card-subtitle>giov 16 maggio 2019</mat-card-subtitle>
-      <mat-paginator></mat-paginator>
+      <mat-card-title>{{routes[pag.pageIndex].line.name}}</mat-card-title>
+      <mat-card-subtitle>{{routes[pag.pageIndex].date.toLocaleDateString("en-GB",{
+                                                                                    weekday: 'short',
+                                                                                    year: 'numeric',
+                                                                                    month: 'long',
+                                                                                    day: 'numeric'
+                                                                                   })}}</mat-card-subtitle>
+      <mat-paginator #pag
+                     [length]="pageCount"
+                     [pageSize]="pageSize"
+                     (page)="pageEvent = $event">
+      </mat-paginator>
   </mat-card-header>
   <mat-card-content>
     <mat-list>
-      <mat-list-item> 
-          <h4 mat-line>Orario Fermata</h4>
+      <mat-list-item *ngFor="let stop of routes[pag.pageIndex].path"> 
+          <h4 mat-line>{{stop.stopTime}} {{stop.name}}</h4>
             <mat-chip-list mat-line>
-              <mat-chip [style.background-color]="toggle ? 'red' : 'blue'" (click)="onStudentClick()">Papadum</mat-chip>
-              <mat-chip (click)="onStudentClick()">Naan</mat-chip>
-              <mat-chip (click)="onStudentClick()">Dal</mat-chip>
-            </mat-chip-list>
-      </mat-list-item>
-      <mat-list-item> 
-          <h4 mat-line>Orario Fermata</h4>
-            <mat-chip-list mat-line>
-              <mat-chip (click)="onStudentClick()">Papadum</mat-chip>
-              <mat-chip (click)="onStudentClick()">Naan</mat-chip>
-              <mat-chip (click)="onStudentClick()">Dal</mat-chip>
-            </mat-chip-list>
-      </mat-list-item>
-      <mat-list-item> 
-          <h4 mat-line>Orario Fermata</h4>
-            <mat-chip-list mat-line>
-              <mat-chip (click)="onStudentClick()">Papadum</mat-chip>
-              <mat-chip (click)="onStudentClick()">Naan</mat-chip>
-              <mat-chip (click)="onStudentClick()">Dal</mat-chip>
+              <mat-chip *ngFor="let child of stop.passengers" (click)="onChildClick(child)" [class.childPresent] = "!child.present">
+                {{child.name}}
+              </mat-chip>
             </mat-chip-list>
       </mat-list-item>
     </mat-list>
