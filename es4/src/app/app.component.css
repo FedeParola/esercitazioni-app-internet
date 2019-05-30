@@ -13,3 +13,8 @@
 .childPresent{
   background-color: aqua;
 }
+
+.paginatorButtons{
+  position: absolute; 
+  right: 0px;
+}

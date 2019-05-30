@@ -9,6 +9,7 @@ import {MatListModule} from '@angular/material/list';
 import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatChipsModule} from '@angular/material/chips';
 import {RoutesService} from './routes.service';
+import {MatTabsModule} from '@angular/material/tabs';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import {RoutesService} from './routes.service';
     MatCardModule,
     MatListModule,
     MatPaginatorModule,
-    MatChipsModule
+    MatChipsModule,
+    MatTabsModule
   ],
   providers: [RoutesService],
   bootstrap: [AppComponent]

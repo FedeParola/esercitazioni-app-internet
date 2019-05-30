@@ -6,8 +6,7 @@ export const routes = [
             name: 'Line1'
         },
         date: new Date(2019,4,26),
-        direction: 'O',
-        path:[
+        pathO:[
             {
                 id: 100,
                 name: 'Nizza',
@@ -69,17 +68,8 @@ export const routes = [
                     }
                 ]
             }
-        ]
-    },
-    {
-        id: 1,
-        line: {
-            id: 10,
-            name: 'Line1'
-        },
-        date: new Date(2019,4,26),
-        direction: 'R',
-        path:[
+        ],
+        pathR:[
             {
                 id: 400,
                 name: 'Porta Nuova',
@@ -144,14 +134,13 @@ export const routes = [
         ]
     },
     {
-        id: 2,
+        id: 1,
         line: {
             id: 30,
             name: 'Line3'
         },
         date: new Date(2019,4,30),
-        direction: 'O',
-        path:[
+        pathO:[
             {
                 id: 700,
                 name: 'Ferrucci',
@@ -201,6 +190,179 @@ export const routes = [
                     },
                     {
                         name: 'Gloria',
+                        present: 'false'
+                    }
+                ]
+            }
+        ],
+        pathR:[
+            {
+                id: 1000,
+                name: 'Adriano',
+                stopTime: '18:35',
+                passengers:[
+                    {
+                        name: 'Giuseppe',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Gloria',
+                        present: 'false'
+                    }
+                ]
+            },
+            {
+                id: 1100,
+                name: 'Sabotino',
+                stopTime: '18:40',
+                passengers:[
+                    {
+                        name: 'Maria',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Lucia',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Davide',
+                        present: 'false'
+                    }
+                ]
+            },
+            {
+                id: 1200,
+                name: 'Ferrucci',
+                stopTime: '18:50',
+                passengers:[
+                    {
+                        name: 'Gigi',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Pippo',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Pluto',
+                        present: 'false'
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        id: 2,
+        line: {
+            id: 20,
+            name: 'Line2'
+        },
+        date: new Date(2019,5,1),
+        pathO:[
+            {
+                id: 1300,
+                name: 'Corso Vittorio',
+                stopTime: '8:00',
+                passengers:[
+                    {
+                        name: 'Gigi',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Pippo',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Pluto',
+                        present: 'false'
+                    }
+                ]
+            },
+            {
+                id: 1400,
+                name: 'Corso Castelfidardo',
+                stopTime: '8:20',
+                passengers:[
+                    {
+                        name: 'Maria',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Lucia',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Davide',
+                        present: 'false'
+                    }
+                ]
+            },
+            {
+                id: 1500,
+                name: 'Adriano',
+                stopTime: '8:35',
+                passengers:[
+                    {
+                        name: 'Giuseppe',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Gloria',
+                        present: 'false'
+                    }
+                ]
+            }
+        ],
+        pathR:[
+            {
+                id: 1600,
+                name: 'Adriano',
+                stopTime: '18:35',
+                passengers:[
+                    {
+                        name: 'Giuseppe',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Gloria',
+                        present: 'false'
+                    }
+                ]
+            },
+            {
+                id: 1700,
+                name: 'Corso Castelfidardo',
+                stopTime: '18:40',
+                passengers:[
+                    {
+                        name: 'Maria',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Lucia',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Davide',
+                        present: 'false'
+                    }
+                ]
+            },
+            {
+                id: 1800,
+                name: 'Corso Vittorio',
+                stopTime: '18:50',
+                passengers:[
+                    {
+                        name: 'Gigi',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Pippo',
+                        present: 'false'
+                    },
+                    {
+                        name: 'Pluto',
                         present: 'false'
                     }
                 ]
