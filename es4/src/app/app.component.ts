@@ -20,6 +20,22 @@ export class AppComponent {
 
   ngOnInit() {
     this.routes=this.routesService.getRoutes();
+
+    /* Sort passengers by name */
+    for (let route of this.routes) {
+      for (let stop of route.pathO) {
+        stop.passengers.sort(function(a, b) {
+          return a.name.localeCompare(b.name);
+        })
+      }
+
+      for (let stop of route.pathR) {
+        stop.passengers.sort(function(a, b) {
+          return a.name.localeCompare(b.name);
+        })
+      }
+    }
+
     this.pageCount=this.routes.length;
     this.pageSize=1;
   }
