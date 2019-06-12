@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class AuthorizationManager {
     public static void authorizeReservationAccess(User user, Reservation reservation) throws ForbiddenException {
-        if(!user.getEmail().equals(reservation.getUser())){
+        if(!user.getEmail().equals(reservation.getPupil().getUser().getEmail())){
             authorizeLineAccess(user, reservation.getStop().getLine());
         }
     }

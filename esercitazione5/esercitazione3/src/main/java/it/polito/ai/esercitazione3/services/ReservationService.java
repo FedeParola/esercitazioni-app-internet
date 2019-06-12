@@ -1,16 +1,10 @@
 package it.polito.ai.esercitazione3.services;
 
-import it.polito.ai.esercitazione3.entities.Line;
-import it.polito.ai.esercitazione3.entities.Reservation;
-import it.polito.ai.esercitazione3.entities.Stop;
-import it.polito.ai.esercitazione3.entities.User;
+import it.polito.ai.esercitazione3.entities.*;
 import it.polito.ai.esercitazione3.exceptions.BadRequestException;
 import it.polito.ai.esercitazione3.exceptions.ForbiddenException;
 import it.polito.ai.esercitazione3.exceptions.NotFoundException;
-import it.polito.ai.esercitazione3.repositories.LineRepository;
-import it.polito.ai.esercitazione3.repositories.ReservationRepository;
-import it.polito.ai.esercitazione3.repositories.StopRepository;
-import it.polito.ai.esercitazione3.repositories.UserRepository;
+import it.polito.ai.esercitazione3.repositories.*;
 import it.polito.ai.esercitazione3.viewmodels.ReservationDTO;
 import it.polito.ai.esercitazione3.viewmodels.ReservationsDTO;
 
@@ -44,6 +38,8 @@ public class ReservationService {
     private ReservationRepository reservationRepository;
     @Autowired
     private LineRepository lineRepository;
+    @Autowired
+    private PupilRepository pupilRepository;
 
     public ReservationsDTO getReservations(String lineName, Date date, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         /* Get the requested line */
@@ -65,7 +61,7 @@ public class ReservationService {
             for(Reservation reservation: stop.getReservations()) {
                 /* WARNING: not efficient, maybe rewrite the whole method */
                 if(date.equals(reservation.getDate())) {
-                    stopReservations.addStudent(reservation.getUser().getEmail(), reservation.getStudent());
+                    stopReservations.addPupil(reservation.getPupil().getId(), reservation.getPupil().getName(), reservation.getAttendance() != null);
                 }
             }
 
@@ -94,6 +90,11 @@ public class ReservationService {
             throw new BadRequestException("Unknown stop with id " + reservationDTO.getStopId());
         }
 
+        Pupil pupil = pupilRepository.findById(reservationDTO.getPupilId()).orElse(null);
+        if(pupil == null) {
+            throw new BadRequestException("Unknown pupil with id " + reservationDTO.getPupilId());
+        }
+
         if(!line.equals(stop.getLine())) {
             throw new BadRequestException("Stop with id " + reservationDTO.getStopId() + "doesn't belong to line " + lineName);
         }
@@ -105,8 +106,7 @@ public class ReservationService {
         Reservation reservation = new Reservation();
         reservation.setStop(stop);
         reservation.setDate(new java.sql.Date(date.getTime()));
-        reservation.setStudent(reservationDTO.getStudent());
-        reservation.setUser(currentUser);
+        reservation.setPupil(pupil);
 
         reservation = reservationRepository.save(reservation);
 
@@ -143,9 +143,6 @@ public class ReservationService {
             throw new BadRequestException("The requested stop isn't available for the requested direction");
         }
 
-        /* Update other fields */
-        reservation.setStudent(reservationDTO.getStudent());
-
         reservationRepository.save(reservation);
 
         return;
@@ -173,8 +170,7 @@ public class ReservationService {
         reservationDTO.setId(reservation.getId());
         reservationDTO.setDirection(reservation.getStop().getDirection().toString());
         reservationDTO.setStopId(reservation.getStop().getId());
-        reservationDTO.setStudent(reservation.getStudent());
-        reservationDTO.setEmail(reservation.getUser().getEmail());
+        reservationDTO.setPupilId(reservation.getPupil().getId());
 
         return reservationDTO;
     }

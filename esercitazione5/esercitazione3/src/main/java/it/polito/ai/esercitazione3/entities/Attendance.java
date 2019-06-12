@@ -7,7 +7,7 @@ import java.sql.Date;
 
 @Entity
 @Data
-public class Reservation {
+public class Attendance {
     @Id
     @GeneratedValue
     @Column(name = "Id")
@@ -17,13 +17,10 @@ public class Reservation {
     @JoinColumn(name = "PupilId", nullable = false)
     private Pupil pupil;
 
+    @OneToOne
+    @JoinColumn(name = "ReservationId", nullable = true)
+    private Reservation reservation;
+
     @Column(name = "Date", nullable = false)
     private Date date;
-
-    @ManyToOne
-    @JoinColumn(name = "StopId", nullable = false)
-    private Stop stop;
-
-    @OneToOne(mappedBy = "reservation")
-    private Attendance attendance;
 }

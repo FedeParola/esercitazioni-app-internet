@@ -10,12 +10,12 @@ import javax.validation.constraints.Pattern;
 public class ReservationDTO {
     private Long id;
     @NotNull
-    private String student;
+    @Min(0)
+    private Long pupilId;
     @NotNull
     @Min(0)
     private Long stopId;
     @NotNull
     @Pattern(regexp = "O|R")
     private String direction;
-    private String email;
 }

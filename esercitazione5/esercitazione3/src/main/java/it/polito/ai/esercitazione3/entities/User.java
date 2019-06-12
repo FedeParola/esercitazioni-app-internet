@@ -34,4 +34,7 @@ public class User {
     @Builder.Default
     @ManyToMany
     private List<Line> lines = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Pupil> pupils;
 }
