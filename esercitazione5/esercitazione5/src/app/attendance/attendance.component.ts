@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { PageEvent } from '@angular/material';
 import { AttendanceService } from '../attendance.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-attendance',
@@ -9,7 +10,10 @@ import { AttendanceService } from '../attendance.service';
 })
 export class AttendanceComponent implements OnInit {
   title = 'esercitazione5';
-  routes: any[];
+  currentDate: Date;
+  currentLine: number;
+  reservations$: Observable<any>;
+  lines: string[];
 
   pageCount: number;
   pageSize: number;
@@ -18,15 +22,27 @@ export class AttendanceComponent implements OnInit {
   constructor(private attendanceService: AttendanceService){}
 
   ngOnInit() {
-    this.routes=this.attendanceService.getRoutes();
-    this.pageCount=this.routes.length;
+    this.currentDate = new Date();
+    this.currentLine = 0;
+    this.attendanceService.getLines().subscribe((res: string[]) => {
+      this.lines = res;
+      this.loadCurrentRoute();
+    },
+    () => {
+      console.log("Error getting lines.")
+    });
     this.pageSize=1
+  }
+
+  loadCurrentRoute() {
+    this.reservations$ = this.attendanceService.getReservations(this.lines[this.currentLine], this.currentDate);
   }
 
   onChildClick(child) {
     child.present ? child.present = false : child.present = true;
+    /* Add/remove attendance from service */
   }
-
+/*
   findClosestRoute() : number {
     let i;
     let current = Date.now();
@@ -39,6 +55,6 @@ export class AttendanceComponent implements OnInit {
     }
 
     return i-1;
-  }
+  }*/
 
 }

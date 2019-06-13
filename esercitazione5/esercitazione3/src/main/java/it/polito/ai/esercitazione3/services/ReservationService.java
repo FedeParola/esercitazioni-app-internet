@@ -56,6 +56,7 @@ public class ReservationService {
             /* Prepare a list of reservations for the current stop */
             ReservationsDTO.StopReservations stopReservations = new ReservationsDTO.StopReservations();
             stopReservations.setStopName(stop.getName());
+            stopReservations.setStopTime(stop.getTime().toString().substring(0, 5));
 
             /* Add reservations for the requested date to the list */
             for(Reservation reservation: stop.getReservations()) {

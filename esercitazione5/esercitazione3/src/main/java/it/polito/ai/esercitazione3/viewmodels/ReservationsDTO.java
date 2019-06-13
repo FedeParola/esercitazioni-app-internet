@@ -13,6 +13,7 @@ public class ReservationsDTO {
     @Data
     public static class StopReservations {
         private String stopName;
+        private String stopTime;
         private final List<Pupil> pupils = new ArrayList<>();
 
         public void addPupil(Long id, String name, boolean present) {

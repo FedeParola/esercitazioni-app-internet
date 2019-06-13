@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { shareReplay, tap } from 'rxjs/operators';
 import { decode } from 'jsonwebtoken';
+import { environment } from '../environments/environment'
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class AuthenticationService {
   constructor(private http: HttpClient) { }
 
   login(email:string, password:string ) {
-    return this.http.post('http://localhost:8080/login', {email, password}).pipe(
+    return this.http.post(environment.apiUrl+'/login', {email, password}).pipe(
       tap(res => this.setSession(res)),
       shareReplay()
     );
