@@ -277,4 +277,11 @@ public class UserService implements InitializingBean, UserDetailsService {
                 true, true, true, authList);
     }
 
+    public String getUser(String userID) throws NotFoundException {
+        User u = userRepository.findById(userID).orElse(null);
+        if(u != null)
+            return u.getEmail();
+
+        throw new NotFoundException();
+    }
 }

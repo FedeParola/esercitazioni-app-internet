@@ -156,5 +156,11 @@ public class UserController {
 
         return;
     }
+    @GetMapping(value = "/register/{userID}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String,String> getUser(@PathVariable String userID) throws NotFoundException {
+        Map<String,String> returnedBody = new HashMap<>();
+        returnedBody.put("email",userService.getUser(userID));
+        return returnedBody;
+    }
 
 }

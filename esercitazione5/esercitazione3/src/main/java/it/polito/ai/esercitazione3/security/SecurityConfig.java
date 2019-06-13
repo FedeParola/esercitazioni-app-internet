@@ -45,7 +45,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll() // Remove before submit  (allows h2-console access)
-                .antMatchers("/login", "/register", "/confirm/*", "/recover", "/recover/*").permitAll()
+                .antMatchers("/login", "/register", "/register/*", "/confirm/*", "/recover", "/recover/*").permitAll()
                 .antMatchers("/users").hasAnyRole("SYSTEM-ADMIN", "ADMIN")
                 .antMatchers("/users/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN")
                 .antMatchers("/lines").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")

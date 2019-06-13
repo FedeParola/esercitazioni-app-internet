@@ -17,6 +17,10 @@ export class AuthenticationService {
       shareReplay()
     );
   }
+
+  register(email:string, pass:string, confPass: string) {
+    return this.http.post('http://localhost:8080/register', {email, pass, confPass});
+  }
       
   private setSession(authResult) {
     let payload = decode(authResult.token);
@@ -41,5 +45,9 @@ export class AuthenticationService {
       const expiration = localStorage.getItem("expires_at");
       const expiresAt = JSON.parse(expiration);
       return new Date(expiresAt);
+  }
+
+  checkEmail(email: string){
+    return this.http.get(environment.apiUrl+'/users/'+email);
   }
 }
