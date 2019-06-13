@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, EmailValidator } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, EmailValidator, AsyncValidatorFn } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../authentication.service';
 import { MatSnackBar } from '@angular/material';
+import { map, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-register',
@@ -14,14 +15,14 @@ export class RegisterComponent implements OnInit {
 
   constructor(private _snackBar: MatSnackBar,
     private fb: FormBuilder, 
-    private authService: AuthenticationService, 
+    private authService: AuthenticationService,
     private router: Router) {
       this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.pattern('^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{6,32}$')]],
       confPassword: ['', Validators.required]
     },{
-      validators: [this.matchingConfirmPasswords, this.checkEmail]
+      validator: this.matchingConfirmPasswords
     });
   }
 
@@ -43,18 +44,15 @@ export class RegisterComponent implements OnInit {
     }
   }
 
-  checkEmail(form: FormGroup){
-    const val = form.value;
-    console.log("entrato nel validator");
+  checkEmail() {
+    const val = this.form.value;
     if(val.email){
       this.authService.checkEmail(val.email).
         subscribe(
           () => {
-            console.log("email già usata");
-            return form.controls['email'].setErrors({ alreadyUsed: true });
+            return this.form.controls['email'].setErrors({ alreadyUsed: true });
           },
           () => {
-            console.log("errore getUsers");
             return null;
           }
         )

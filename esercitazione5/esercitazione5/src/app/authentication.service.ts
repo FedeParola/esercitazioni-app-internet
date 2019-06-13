@@ -48,6 +48,6 @@ export class AuthenticationService {
   }
 
   checkEmail(email: string){
-    return this.http.get(environment.apiUrl+'/users/'+email);
+    return this.http.get(environment.apiUrl+'/register/'+email);
   }
 }
