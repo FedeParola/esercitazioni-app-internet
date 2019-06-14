@@ -23,4 +23,7 @@ public class Attendance {
 
     @Column(name = "Date", nullable = false)
     private Date date;
+
+    @Column(name = "Direction", nullable = false)
+    private Character direction;
 }
