@@ -1,21 +1,20 @@
 .example-card {
-    max-width: 400px;
-    margin: auto;
-  }
-  
-  .example-header-image {
-    background-image: url('https://material.angular.io/assets/img/examples/shiba1.jpg');
-    background-size: cover;
-  }
-.mat-list-icon {
-    color: rgba(0, 0, 0, 0.54);
-  }
+  min-width: 150px;
+  max-width: 500px;
+  width: 100%;
+  margin: auto;
+}
 
-.childPresent{
+.pupilPresent {
   background-color: aqua;
 }
 
-.paginatorButtons{
+.nav-buttons {
   position: absolute; 
-  right: 0px;
+  right: 5px;
+}
+
+.hour {
+  font-size: 0.93em;
+  margin-right: 0.5em;
 }

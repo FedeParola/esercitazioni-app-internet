@@ -3,7 +3,6 @@ import { FormGroup, FormBuilder, Validators, EmailValidator, AsyncValidatorFn } 
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../authentication.service';
 import { MatSnackBar } from '@angular/material';
-import { map, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-register',
@@ -12,6 +11,7 @@ import { map, catchError } from 'rxjs/operators';
 })
 export class RegisterComponent implements OnInit {
   form: FormGroup;
+  registerButtonDisabled: boolean;
 
   constructor(private _snackBar: MatSnackBar,
     private fb: FormBuilder, 
@@ -26,10 +26,15 @@ export class RegisterComponent implements OnInit {
     });
   }
 
+  ngOnInit() {
+    this.registerButtonDisabled = false;
+  }
+
   register() {
     const val = this.form.value;
 
-    if (val.email && val.password && val.confPassword) {
+    if (this.form.valid) {
+      this.registerButtonDisabled = true;
       this.authService.register(val.email, val.password, val.confPassword)
           .subscribe(
               () => {
@@ -37,8 +42,9 @@ export class RegisterComponent implements OnInit {
                 this.router.navigateByUrl('/login');
               },
               () => {
+                this.registerButtonDisabled = false;
                 this._snackBar.open("Something went wrong", "",
-                    { panelClass: 'register-error-snackbar', duration: 5000 });
+                    { panelClass: 'error-snackbar', duration: 5000 });
               }
           );
     }
@@ -68,9 +74,5 @@ export class RegisterComponent implements OnInit {
         return form.controls['confPassword'].setErrors({ passwordNotEquivalent: true }); 
     } 
   }
-
-  ngOnInit() {
-  }
-
 }
 

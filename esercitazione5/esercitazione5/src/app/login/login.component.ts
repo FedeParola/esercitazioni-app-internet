@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../authentication.service';
 import { MatSnackBar } from '@angular/material';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-login',
@@ -11,6 +12,7 @@ import { MatSnackBar } from '@angular/material';
 })
 export class LoginComponent implements OnInit {
   form: FormGroup;
+  loginButtonDisabled: boolean;
 
   constructor(private _snackBar: MatSnackBar,
               private fb: FormBuilder, 
@@ -23,23 +25,40 @@ export class LoginComponent implements OnInit {
       });
   }
 
+  ngOnInit(): void {
+    this.loginButtonDisabled = false;
+  }
+
   login() {
       const val = this.form.value;
 
       if (val.email && val.password) {
-          this.authService.login(val.email, val.password)
-              .subscribe(
-                  () => {
-                    console.log("User is logged in");
-                    this.router.navigateByUrl('/');
-                  },
-                  () => {
-                    this._snackBar.open("Invalid username or password!", "",
-                        { panelClass: 'login-error-snackbar', duration: 5000 });
-                  }
-              );
+        this.loginButtonDisabled = true;
+        this.authService.login(val.email, val.password)
+            .subscribe(
+                () => {
+                  console.log("User is logged in");
+                  this.router.navigateByUrl('/attendance');
+                },
+                (error) => {
+                  this.loginButtonDisabled = false;
+                  this.handleError(error);
+                }
+            );
       }
   }
 
-  ngOnInit() {}
+  private handleError(error: HttpErrorResponse) {
+    let errMsg: string;
+    if (!(error.error instanceof ErrorEvent) && error.status == 401) {
+      /* Invalid username or password */
+      errMsg = "Invalid username or password!"
+      
+    } else {
+      /* All other errors*/
+      errMsg = "Error in the communication with the server!"
+    }
+
+    this._snackBar.open(errMsg, "", { panelClass: 'error-snackbar', duration: 5000 });
+  };
 }

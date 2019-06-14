@@ -28,7 +28,7 @@ button:disabled {
     cursor: auto;
 }
 
-.login-error-snackbar {
+.error-snackbar {
   color: white;
   background: #D10D00;
   font-weight: bolder;

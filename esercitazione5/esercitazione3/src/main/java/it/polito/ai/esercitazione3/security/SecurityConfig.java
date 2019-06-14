@@ -38,12 +38,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .httpBasic().disable()
             .csrf().disable()
+            .cors().and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .headers().frameOptions().disable() // Remove before submit (allows h2-console access)
             .and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll() // Remove before submit  (allows h2-console access)
                 .antMatchers("/login", "/register", "/register/*", "/confirm/*", "/recover", "/recover/*").permitAll()
                 .antMatchers("/users").hasAnyRole("SYSTEM-ADMIN", "ADMIN")
