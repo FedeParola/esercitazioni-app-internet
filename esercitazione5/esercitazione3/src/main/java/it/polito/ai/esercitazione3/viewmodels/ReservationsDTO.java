@@ -18,8 +18,8 @@ public class ReservationsDTO {
         private String stopTime;
         private final List<Pupil> pupils = new ArrayList<>();
 
-        public void addPupil(Long id, String name, boolean present) {
-            pupils.add(new Pupil(id, name, present));
+        public void addPupil(Long id, String name, Long attendanceId) {
+            pupils.add(new Pupil(id, name, attendanceId));
         }
     }
 
@@ -27,6 +27,6 @@ public class ReservationsDTO {
     public static class Pupil {
         private final Long id;
         private final String name;
-        private final boolean present;
+        private final Long attendanceId;
     }
 }

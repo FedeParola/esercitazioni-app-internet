@@ -19,10 +19,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import it.polito.ai.esercitazione3.security.AuthorizationManager;
@@ -40,6 +37,8 @@ public class ReservationService {
     private LineRepository lineRepository;
     @Autowired
     private PupilRepository pupilRepository;
+    @Autowired
+    private AttendanceRepository attendanceRepository;
 
     public ReservationsDTO getReservations(String lineName, Date date, UserDetails loggedUser) throws NotFoundException, BadRequestException, ForbiddenException {
         /* Get the requested line */
@@ -49,20 +48,39 @@ public class ReservationService {
         }
         User currentUser=userRepository.findById(loggedUser.getUsername()).orElseThrow(() -> new BadRequestException()); //get the current user from db
 
-        AuthorizationManager.authorizeLineAccess(currentUser,line);
+        // AuthorizationManager.authorizeLineAccess(currentUser, line);
 
         ReservationsDTO reservationsDTO = new ReservationsDTO();
-        for(Stop stop: line.getStops()) {
+        Map<Long, Pupil> outNoRes = new HashMap<>();
+        Map<Long, Pupil> retNoRes = new HashMap<>();
+        /*Add all the pupils associated to the line to the lists of pupils not reserved*/
+        for(Pupil p : line.getPupils()){
+            outNoRes.put(p.getId(), p);
+            retNoRes.put(p.getId(), p);
+        }
+
+        for(Stop stop : line.getStops()) {
             /* Prepare a list of reservations for the current stop */
             ReservationsDTO.StopReservations stopReservations = new ReservationsDTO.StopReservations();
             stopReservations.setStopName(stop.getName());
             stopReservations.setStopTime(stop.getTime().toString().substring(0, 5));
 
             /* Add reservations for the requested date to the list */
-            for(Reservation reservation: stop.getReservations()) {
-                /* WARNING: not efficient, maybe rewrite the whole method */
-                if(date.equals(reservation.getDate())) {
-                    stopReservations.addPupil(reservation.getPupil().getId(), reservation.getPupil().getName(), reservation.getAttendance() != null);
+            for(Reservation reservation : reservationRepository.getReservationsByStopAndDate(stop, new java.sql.Date(date.getTime()))) {
+                Attendance attendance = reservation.getAttendance();
+                Long attendanceId;
+                if(attendance == null){
+                    attendanceId = (long)-1;
+                }
+                else{
+                    attendanceId = attendance.getId();
+                }
+                stopReservations.addPupil(reservation.getPupil().getId(), reservation.getPupil().getName(), attendanceId);
+                /*Remove the pupil from the list of pupils not reserved*/
+                if(stop.getDirection() == 'O') {
+                    outNoRes.remove(reservation.getPupil().getId());
+                } else {
+                    retNoRes.remove(reservation.getPupil().getId());
                 }
             }
 
@@ -74,7 +92,35 @@ public class ReservationService {
             }
         }
 
+        /*Check if each pupil is present or not*/
+        for(Pupil p : outNoRes.values()){
+            Attendance attendance = attendanceRepository.getByPupilAndDate(p, new java.sql.Date(date.getTime())).orElse(null);
+            Long attendanceId;
+            if(attendance == null){
+                attendanceId = (long)-1;
+            }
+            else{
+                attendanceId = attendance.getId();
+            }
+            reservationsDTO.getOutwardNoRes().add(pupilEntityToDto(p, attendanceId));
+        }
+        for(Pupil p : retNoRes.values()){
+            Attendance attendance = attendanceRepository.getByPupilAndDate(p, new java.sql.Date(date.getTime())).orElse(null);
+            Long attendanceId;
+            if(attendance == null){
+                attendanceId = (long)-1;
+            }
+            else{
+                attendanceId = attendance.getId();
+            }
+            reservationsDTO.getReturnNoRes().add(pupilEntityToDto(p, attendanceId));
+        }
+
         return reservationsDTO;
+    }
+
+    private ReservationsDTO.Pupil pupilEntityToDto(Pupil pupil, Long attendanceId){
+        return new ReservationsDTO.Pupil(pupil.getId(), pupil.getName(), attendanceId);
     }
 
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)

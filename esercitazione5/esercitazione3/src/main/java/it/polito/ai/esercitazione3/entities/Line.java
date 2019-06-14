@@ -18,4 +18,7 @@ public class Line {
 
     @OneToMany(mappedBy = "line")
     private List<Stop> stops;
+
+    @OneToMany(mappedBy = "line")
+    private List<Pupil> pupils;
 }

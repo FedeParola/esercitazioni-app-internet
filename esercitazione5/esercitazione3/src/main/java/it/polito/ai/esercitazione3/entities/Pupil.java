@@ -18,4 +18,8 @@ public class Pupil {
     @ManyToOne
     @JoinColumn(name = "UserId", nullable = false)
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "LineId", nullable = false)
+    private Line line;
 }
