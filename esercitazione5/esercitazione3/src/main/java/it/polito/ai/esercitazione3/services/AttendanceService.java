@@ -55,7 +55,7 @@ public class AttendanceService {
             }
         }
 
-        Attendance attendance = new Attendance();
+
         attendance.setPupil(pupil);
         attendance.setDate(new java.sql.Date(date.getTime()));
         attendance.setDirection(attendanceDTO.getDirection());
