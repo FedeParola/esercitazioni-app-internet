@@ -33,3 +33,9 @@ button:disabled {
   background: #D10D00;
   font-weight: bolder;
 }
+
+.success-snackbar {
+  color: white;
+  background: #0d9025;
+  font-weight: bolder;
+}

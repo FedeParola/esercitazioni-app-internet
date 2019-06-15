@@ -40,8 +40,8 @@ export class RegisterComponent implements OnInit {
               () => {
                 console.log("User is registered");
                 this.router.navigateByUrl('/login');
-                this._snackBar.open("Account created, please confirm tour e-mail address", "",
-                    { panelClass: 'confirmation-snackbar', duration: 5000 });
+                this._snackBar.open("Account created, please confirm your e-mail address", "",
+                    { panelClass: 'success-snackbar', duration: 5000 });
               },
               () => {
                 this.registerButtonDisabled = false;

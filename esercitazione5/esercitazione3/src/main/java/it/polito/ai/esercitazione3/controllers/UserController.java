@@ -92,10 +92,13 @@ public class UserController {
     }
 
     @GetMapping(value = "/confirm/{randomUUID}")
-    public void confirm(@PathVariable String randomUUID) throws NotFoundException {
+    public ModelAndView confirm(@PathVariable String randomUUID) throws NotFoundException {
         userService.confirmUser(randomUUID);
 
-        return;
+        ModelAndView response = new ModelAndView();
+        response.setViewName("accountConfirmed");
+
+        return response;
     }
 
     @PostMapping(value = "/recover", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -156,6 +159,7 @@ public class UserController {
 
         return;
     }
+
     @GetMapping(value = "/register/{userID}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String,String> getUser(@PathVariable String userID) throws NotFoundException {
         Map<String,String> returnedBody = new HashMap<>();
