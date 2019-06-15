@@ -11,7 +11,9 @@ import it.polito.ai.esercitazione3.viewmodels.ReservationsDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,8 @@ import java.util.stream.Collectors;
 import it.polito.ai.esercitazione3.security.AuthorizationManager;
 
 @Service
-public class ReservationService {
+@DependsOn("userService")
+public class ReservationService implements InitializingBean {
     private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
     @Autowired
     private UserRepository userRepository;
@@ -236,5 +239,54 @@ public class ReservationService {
         }
 
         return reservation;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        log.info("Inizializzazione!");
+
+        /* Create some random reservations for yesterday, today and tomorrow */
+        Random rnd = new Random(); // Adding a seed we can replicate the same reservations!
+
+        /* Scan all pupils */
+        for (Pupil p: pupilRepository.findAll()) {
+            /* Split stops by direction */
+            List<Stop> outStops = new ArrayList<>();
+            List<Stop> retStops = new ArrayList<>();
+            p.getLine().getStops().forEach((s) -> {
+                if (s.getDirection().equals('O')) {
+                    outStops.add(s);
+                } else {
+                    retStops.add(s);
+                }
+            });
+
+            /* Scan days */
+            long millis = System.currentTimeMillis() - 24 * 60 * 60 * 1000; // Yesterday
+            for (int i = 0; i < 3; i++) {
+                java.sql.Date date = new java.sql.Date(millis);
+
+                /* Random choose for outward reservation */
+                if (rnd.nextBoolean()) {
+                    Reservation r = new Reservation();
+                    r.setDate(date);
+                    r.setPupil(p);
+                    r.setStop(outStops.get(rnd.nextInt(outStops.size()))); // Pick a random stop
+                    reservationRepository.save(r);
+                }
+
+                /* Random choose for backward reservation */
+                if (rnd.nextBoolean()) {
+                    Reservation r = new Reservation();
+                    r.setDate(date);
+                    r.setPupil(p);
+                    r.setStop(retStops.get(rnd.nextInt(retStops.size()))); // Pick a random stop
+                    reservationRepository.save(r);
+                }
+
+                /* Go to next day */
+                millis += 24 * 60 * 60 * 1000;
+            }
+        }
     }
 }
