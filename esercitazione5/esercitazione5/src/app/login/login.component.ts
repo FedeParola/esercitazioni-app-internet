@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthenticationService } from '../authentication.service';
 import { MatSnackBar } from '@angular/material';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AppComponent } from '../app.component';
 
 @Component({
   selector: 'app-login',
@@ -17,7 +18,8 @@ export class LoginComponent implements OnInit {
   constructor(private _snackBar: MatSnackBar,
               private fb: FormBuilder, 
               private authService: AuthenticationService, 
-              private router: Router) {
+              private router: Router,
+              private appComponent: AppComponent) {
 
       this.form = this.fb.group({
           email: ['', Validators.required],
@@ -39,6 +41,7 @@ export class LoginComponent implements OnInit {
                 () => {
                   console.log("User is logged in");
                   this.router.navigateByUrl('/attendance');
+                  this.appComponent.logoutDisabled=false;
                 },
                 (error) => {
                   this.loginButtonDisabled = false;

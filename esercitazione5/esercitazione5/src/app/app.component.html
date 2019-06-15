@@ -1,8 +1,10 @@
-<h1>esercitazione5</h1>
-<nav>
-    <div><a routerLink="/attendance">Attendance</a></div>
-    <div><a routerLink="/login">Login</a></div>
-    <div><a routerLink="/register">Register</a></div>
-</nav>
+<mat-toolbar class="toolbar">
+    <mat-toolbar-row>
+        <span class="spacer"></span>
+        <span >PediBUS</span>
+        <span class="spacer"></span>
+        <button class="button" mat-raised-button (click)="logout()" [disabled]="logoutDisabled">Logout</button>
+    </mat-toolbar-row>
+</mat-toolbar>
 
 <router-outlet></router-outlet>
