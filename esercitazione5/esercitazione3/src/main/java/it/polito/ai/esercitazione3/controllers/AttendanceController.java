@@ -24,7 +24,7 @@ public class AttendanceController {
 
     @RequestMapping(value = "/attendances/{lineName}/{date}", method = RequestMethod.POST,
             produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    private Map<String, Long> createAttendance(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+    public Map<String, Long> createAttendance(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
                                                @RequestBody @Valid AttendanceDTO attendanceDTO, BindingResult bindingResult,
                                                HttpServletResponse response) throws BadRequestException, NotFoundException {
         Map<String, Long> responseBody = new HashMap<>();
@@ -45,7 +45,7 @@ public class AttendanceController {
     }
 
     @RequestMapping(value = "/attendances/{lineName}/{date}/{attendanceId}", method = RequestMethod.DELETE)
-    private void deleteAttendance(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
+    public void deleteAttendance(@PathVariable String lineName, @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") Date date,
                                   @PathVariable Long attendanceId) throws NotFoundException {
 
         attendanceService.deleteAttendance(attendanceId, lineName, date);

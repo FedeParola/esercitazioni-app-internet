@@ -34,6 +34,8 @@ public class AttendanceService {
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW)
     public Long addAttendance(AttendanceDTO attendanceDTO, String lineName, Date date) throws NotFoundException, BadRequestException {
         Line line = lineRepository.getByName(lineName);
+
+        /*Check line and pupil existence*/
         if(line == null) {
             throw new NotFoundException("Line " + lineName + " not found");
         }
@@ -41,9 +43,14 @@ public class AttendanceService {
         Pupil pupil = pupilRepository.findById(attendanceDTO.getPupilId())
                 .orElseThrow(() -> new NotFoundException("Pupil " + attendanceDTO.getPupilId() + " not found"));
 
-        Attendance attendance = attendanceRepository.getByPupilAndDateAndDirection(pupil, new java.sql.Date(date.getTime()), attendanceDTO.getDirection())
+        /*Check if the pupil is already present somewhere the same day in the same direction*/
+        Attendance a = attendanceRepository.getByPupilAndDateAndDirection(pupil, new java.sql.Date(date.getTime()), attendanceDTO.getDirection())
                 .orElse(null);
+        if(a != null){
+            throw new BadRequestException("The pupil was already marked as present");
+        }
 
+        /*Get the (eventually) linked reservation*/
         List<Reservation> reservations = reservationRepository.getByPupilAndDate(pupil, new java.sql.Date(date.getTime()));
         Reservation foundRes = null;
         for(Reservation r : reservations){
@@ -55,7 +62,8 @@ public class AttendanceService {
             }
         }
 
-
+        /*Create the attendance and add it to the repo*/
+        Attendance attendance = new Attendance();
         attendance.setPupil(pupil);
         attendance.setDate(new java.sql.Date(date.getTime()));
         attendance.setDirection(attendanceDTO.getDirection());
