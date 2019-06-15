@@ -41,6 +41,9 @@ public class AttendanceService {
         Pupil pupil = pupilRepository.findById(attendanceDTO.getPupilId())
                 .orElseThrow(() -> new NotFoundException("Pupil " + attendanceDTO.getPupilId() + " not found"));
 
+        Attendance attendance = attendanceRepository.getByPupilAndDateAndDirection(pupil, new java.sql.Date(date.getTime()), attendanceDTO.getDirection())
+                .orElse(null);
+
         List<Reservation> reservations = reservationRepository.getByPupilAndDate(pupil, new java.sql.Date(date.getTime()));
         Reservation foundRes = null;
         for(Reservation r : reservations){

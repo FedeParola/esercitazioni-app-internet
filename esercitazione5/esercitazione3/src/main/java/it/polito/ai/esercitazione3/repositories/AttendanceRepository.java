@@ -8,5 +8,5 @@ import java.sql.Date;
 import java.util.Optional;
 
 public interface AttendanceRepository extends CrudRepository<Attendance, Long> {
-    Optional<Attendance> getByPupilAndDate(Pupil p, Date date);
+    Optional<Attendance> getByPupilAndDateAndDirection(Pupil pupil, Date date, Character direction);
 }

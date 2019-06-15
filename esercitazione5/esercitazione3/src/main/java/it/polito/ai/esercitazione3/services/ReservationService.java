@@ -94,7 +94,8 @@ public class ReservationService {
 
         /*Check if each pupil is present or not*/
         for(Pupil p : outNoRes.values()){
-            Attendance attendance = attendanceRepository.getByPupilAndDate(p, new java.sql.Date(date.getTime())).orElse(null);
+            Attendance attendance = attendanceRepository.getByPupilAndDateAndDirection(p, new java.sql.Date(date.getTime()), 'O')
+                    .orElse(null);
             Long attendanceId;
             if(attendance == null){
                 attendanceId = (long)-1;
@@ -105,7 +106,8 @@ public class ReservationService {
             reservationsDTO.getOutwardNoRes().add(pupilEntityToDto(p, attendanceId));
         }
         for(Pupil p : retNoRes.values()){
-            Attendance attendance = attendanceRepository.getByPupilAndDate(p, new java.sql.Date(date.getTime())).orElse(null);
+            Attendance attendance = attendanceRepository.getByPupilAndDateAndDirection(p, new java.sql.Date(date.getTime()), 'R')
+                    .orElse(null);
             Long attendanceId;
             if(attendance == null){
                 attendanceId = (long)-1;

@@ -7,6 +7,6 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.Optional;
 
 public interface ConfirmationTokenRepository extends CrudRepository<ConfirmationToken, Long> {
-    public Optional<ConfirmationToken> findByUser(User user);
-    public Optional<ConfirmationToken> findByUuid(String uuid);
+    Optional<ConfirmationToken> findByUser(User user);
+    Optional<ConfirmationToken> findByUuid(String uuid);
 }
