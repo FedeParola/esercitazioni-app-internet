@@ -3,6 +3,7 @@ package it.polito.ai.esercitazione3;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -42,7 +43,7 @@ public class Esercitazione3Application {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**");
+                registry.addMapping("/**").allowedMethods("GET", "HEAD", "POST", "DELETE");
             }
         };
     }

@@ -44,7 +44,7 @@ public class AttendanceService {
                 .orElseThrow(() -> new NotFoundException("Pupil " + attendanceDTO.getPupilId() + " not found"));
 
         /*Check if the pupil is already present somewhere the same day in the same direction*/
-        Attendance a = attendanceRepository.getByPupilAndDateAndDirection(pupil, new java.sql.Date(date.getTime()), attendanceDTO.getDirection())
+        Attendance a = attendanceRepository.getByPupilAndDateAndDirection(pupil, new java.sql.Date(date.getTime()), attendanceDTO.getDirection().charAt(0))
                 .orElse(null);
         if(a != null){
             throw new BadRequestException("The pupil was already marked as present");
@@ -54,7 +54,7 @@ public class AttendanceService {
         List<Reservation> reservations = reservationRepository.getByPupilAndDate(pupil, new java.sql.Date(date.getTime()));
         Reservation foundRes = null;
         for(Reservation r : reservations){
-            if(r.getStop().getDirection().equals(attendanceDTO.getDirection())){
+            if(r.getStop().getDirection().equals(attendanceDTO.getDirection().charAt(0))){
                 if(!r.getStop().getLine().getName().equals(lineName)){
                     throw new BadRequestException("The attendance does not match the reservation");
                 }
@@ -66,7 +66,7 @@ public class AttendanceService {
         Attendance attendance = new Attendance();
         attendance.setPupil(pupil);
         attendance.setDate(new java.sql.Date(date.getTime()));
-        attendance.setDirection(attendanceDTO.getDirection());
+        attendance.setDirection(attendanceDTO.getDirection().charAt(0));
         if(foundRes != null){
             attendance.setReservation(foundRes);
         }

@@ -31,7 +31,8 @@
             <mat-icon matListIcon>fiber_manual_record</mat-icon>
             <h4 mat-line><span class="hour">{{stop.stopTime}}</span> <strong>{{stop.stopName}}</strong></h4>
             <mat-chip-list mat-line>
-              <mat-chip *ngFor="let pupil of stop.pupils" (click)="onPupilClick(pupil, 'O')" [class.pupilPresent] = "pupil.attendanceId == -1">
+              <mat-chip *ngFor="let pupil of stop.pupils" (click)="onPupilClick(pupil, 'O')"
+                [class.pupilPresent] = "pupil.attendanceId >= 0" [disabled]="pupil.disabled">
                 {{pupil.name}}
               </mat-chip>
             </mat-chip-list>
@@ -39,7 +40,8 @@
           <mat-list-item>
             <h4 mat-line><strong>Pupils without reservation</strong></h4>
             <mat-chip-list mat-line>
-              <mat-chip *ngFor="let pupil of reservations.outwardNoRes" (click)="onPupilClick(pupil, 'O')" [class.pupilPresent] = "pupil.attendanceId == -1">
+              <mat-chip *ngFor="let pupil of reservations.outwardNoRes" (click)="onPupilClick(pupil, 'O')"
+                [class.pupilPresent] = "pupil.attendanceId >= 0" [disabled]="pupil.disabled">
                 {{pupil.name}}
               </mat-chip>
             </mat-chip-list>
@@ -53,7 +55,8 @@
               <mat-icon matListIcon>fiber_manual_record</mat-icon>
               <h4 mat-line><span class="hour">{{stop.stopTime}}</span> <strong>{{stop.stopName}}</strong></h4>
               <mat-chip-list mat-line>
-                <mat-chip *ngFor="let pupil of stop.pupils" (click)="onPupilClick(pupil, 'R')" [class.pupilPresent] = "pupil.attendanceId == -1">
+                <mat-chip *ngFor="let pupil of stop.pupils" (click)="onPupilClick(pupil, 'R')"
+                  [class.pupilPresent] = "pupil.attendanceId >= 0"  [disabled]="pupil.disabled">
                   {{pupil.name}}
                 </mat-chip>
               </mat-chip-list>
@@ -61,7 +64,8 @@
             <mat-list-item>
               <h4 mat-line><strong>Pupils without reservation</strong></h4>
               <mat-chip-list mat-line>
-                <mat-chip *ngFor="let pupil of reservations.returnNoRes" (click)="onPupilClick(pupil, 'R')" [class.pupilPresent] = "pupil.attendanceId == -1">
+                <mat-chip *ngFor="let pupil of reservations.returnNoRes" (click)="onPupilClick(pupil, 'R')"
+                  [class.pupilPresent] = "pupil.attendanceId >= 0" [disabled]="pupil.disabled">
                   {{pupil.name}}
                 </mat-chip>
               </mat-chip-list>

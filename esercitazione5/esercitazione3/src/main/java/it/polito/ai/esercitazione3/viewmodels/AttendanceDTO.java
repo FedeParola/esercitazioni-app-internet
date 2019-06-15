@@ -14,5 +14,5 @@ public class AttendanceDTO {
 
     @NotNull
     @Pattern(regexp = "O|R")
-    private Character direction;
+    private String direction;
 }

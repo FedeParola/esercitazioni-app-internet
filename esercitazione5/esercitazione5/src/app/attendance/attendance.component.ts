@@ -44,34 +44,36 @@ export class AttendanceComponent implements OnInit {
   }
 
   onPupilClick(pupil, direction: string) {
-    //disable click on chip
-    if(pupil.attendanceId >= 0){
-      /*Remove attendance from the service*/
-      this.attendanceService.deleteAttendance(this.currentLine, this.currentDate, pupil.attendanceId)
-        .subscribe(
-          () => {
-            pupil.attendanceId = -1;
-            //enable click on chip
-          },
-          (error) => {
-            this.handleError(error);
-            //enable click on chip
-          }
-        );
+    if (!pupil.disabled) {
+      pupil.disabled = true;
+      if(pupil.attendanceId >= 0){
+        /*Remove attendance from the service*/
+        this.attendanceService.deleteAttendance(this.currentLine, this.currentDate, pupil.attendanceId)
+          .subscribe(
+            () => {
+              pupil.attendanceId = -1;
+              pupil.disabled = false;
+            },
+            (error) => {
+              this.handleError(error);
+              pupil.disabled = false;
+            }
+          );
 
-    } else {
-      /*Add attendance on the service*/ 
-      this.attendanceService.createAttendance(this.currentLine, this.currentDate, pupil.id, direction)
-        .subscribe(
-          (response) => {
-            pupil.attendanceId = response.Id;
-            //enable click on chip
-          },
-          (error) => {
-            this.handleError(error);
-            //enable click on chip
-          }
-        );
+      } else {
+        /*Add attendance on the service*/ 
+        this.attendanceService.createAttendance(this.currentLine, this.currentDate, pupil.id, direction)
+          .subscribe(
+            (response: any) => {
+              pupil.attendanceId = response.Id;
+              pupil.disabled = false;
+            },
+            (error) => {
+              this.handleError(error);
+              pupil.disabled = false;
+            }
+          );
+      }
     }
   }
 

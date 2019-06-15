@@ -267,7 +267,7 @@ public class ReservationService implements InitializingBean {
                 java.sql.Date date = new java.sql.Date(millis);
 
                 /* Random choose for outward reservation */
-                if (rnd.nextBoolean()) {
+                if (rnd.nextDouble() > 0.25) {
                     Reservation r = new Reservation();
                     r.setDate(date);
                     r.setPupil(p);
@@ -276,7 +276,7 @@ public class ReservationService implements InitializingBean {
                 }
 
                 /* Random choose for backward reservation */
-                if (rnd.nextBoolean()) {
+                if (rnd.nextDouble() > 0.25) {
                     Reservation r = new Reservation();
                     r.setDate(date);
                     r.setPupil(p);

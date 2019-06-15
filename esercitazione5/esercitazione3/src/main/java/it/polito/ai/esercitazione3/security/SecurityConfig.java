@@ -56,6 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE,"/reservations/*/*/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
                 .antMatchers(HttpMethod.GET,"/reservations/*/*/*").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
                 .antMatchers(HttpMethod.POST,"/attendances/**").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
+                .antMatchers(HttpMethod.DELETE,"/attendances/**").hasAnyRole("SYSTEM-ADMIN", "ADMIN", "USER")
                 .anyRequest().authenticated()
         .and().logout()
         .and().exceptionHandling()
