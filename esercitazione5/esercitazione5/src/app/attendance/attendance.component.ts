@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
+import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-attendance',
@@ -17,7 +18,8 @@ export class AttendanceComponent implements OnInit {
   lines: string[];
 
   constructor(private attendanceService: AttendanceService,
-              private router: Router) {}
+              private router: Router,
+              private _snackBar: MatSnackBar) {}
 
   ngOnInit() {
     this.currentDate = new Date();
@@ -41,9 +43,36 @@ export class AttendanceComponent implements OnInit {
       )
   }
 
-  onPupilClick(pupil) {
-    pupil.present ? pupil.present = false : pupil.present = true;
-    /* Add/remove attendance from service */
+  onPupilClick(pupil, direction: string) {
+    //disable click on chip
+    if(pupil.attendanceId >= 0){
+      /*Remove attendance from the service*/
+      this.attendanceService.deleteAttendance(this.currentLine, this.currentDate, pupil.attendanceId)
+        .subscribe(
+          () => {
+            pupil.attendanceId = -1;
+            //enable click on chip
+          },
+          (error) => {
+            this.handleError(error);
+            //enable click on chip
+          }
+        );
+
+    } else {
+      /*Add attendance on the service*/ 
+      this.attendanceService.createAttendance(this.currentLine, this.currentDate, pupil.id, direction)
+        .subscribe(
+          (response) => {
+            pupil.attendanceId = response.Id;
+            //enable click on chip
+          },
+          (error) => {
+            this.handleError(error);
+            //enable click on chip
+          }
+        );
+    }
   }
 
   selectLine(line: string) {
@@ -69,6 +98,7 @@ export class AttendanceComponent implements OnInit {
     } else {
       /* All other errors*/
       console.error("Error contacting server");
+      this._snackBar.open("Error in the communication with the server!", "", { panelClass: 'error-snackbar', duration: 5000 });
     }
   };
 }

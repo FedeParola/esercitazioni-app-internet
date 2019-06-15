@@ -43,7 +43,7 @@ export class RegisterComponent implements OnInit {
               },
               () => {
                 this.registerButtonDisabled = false;
-                this._snackBar.open("Something went wrong", "",
+                this._snackBar.open("Error in the communication with the server!", "",
                     { panelClass: 'error-snackbar', duration: 5000 });
               }
           );
