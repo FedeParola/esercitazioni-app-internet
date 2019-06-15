@@ -66,7 +66,7 @@ public class ReservationService {
             stopReservations.setStopTime(stop.getTime().toString().substring(0, 5));
 
             /* Add reservations for the requested date to the list */
-            for(Reservation reservation : reservationRepository.getReservationsByStopAndDate(stop, new java.sql.Date(date.getTime()))) {
+            for(Reservation reservation : reservationRepository.getByStopAndDate(stop, new java.sql.Date(date.getTime()))) {
                 Attendance attendance = reservation.getAttendance();
                 Long attendanceId;
                 if(attendance == null){

@@ -10,6 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReservationRepository extends CrudRepository<Reservation, Long> {
-    List<Reservation> getReservationsByStopAndDate(Stop stop, Date date);
-    List<Reservation> getReservationsByPupilAndDate(Pupil pupil, Date date);
+    List<Reservation> getByStopAndDate(Stop stop, Date date);
+    List<Reservation> getByPupilAndDate(Pupil pupil, Date date);
 }

@@ -41,7 +41,7 @@ public class AttendanceService {
         Pupil pupil = pupilRepository.findById(attendanceDTO.getPupilId())
                 .orElseThrow(() -> new NotFoundException("Pupil " + attendanceDTO.getPupilId() + " not found"));
 
-        List<Reservation> reservations = reservationRepository.getReservationsByPupilAndDate(pupil, new java.sql.Date(date.getTime()));
+        List<Reservation> reservations = reservationRepository.getByPupilAndDate(pupil, new java.sql.Date(date.getTime()));
         Reservation foundRes = null;
         for(Reservation r : reservations){
             if(r.getStop().getDirection().equals(attendanceDTO.getDirection())){
