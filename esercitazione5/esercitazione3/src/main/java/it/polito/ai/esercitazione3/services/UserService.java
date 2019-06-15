@@ -1,10 +1,16 @@
 package it.polito.ai.esercitazione3.services;
 
-import it.polito.ai.esercitazione3.entities.*;
+import it.polito.ai.esercitazione3.entities.ConfirmationToken;
+import it.polito.ai.esercitazione3.entities.Line;
+import it.polito.ai.esercitazione3.entities.RecoverToken;
+import it.polito.ai.esercitazione3.entities.User;
 import it.polito.ai.esercitazione3.exceptions.BadRequestException;
 import it.polito.ai.esercitazione3.exceptions.ForbiddenException;
 import it.polito.ai.esercitazione3.exceptions.NotFoundException;
-import it.polito.ai.esercitazione3.repositories.*;
+import it.polito.ai.esercitazione3.repositories.ConfirmationTokenRepository;
+import it.polito.ai.esercitazione3.repositories.LineRepository;
+import it.polito.ai.esercitazione3.repositories.RecoverTokenRepository;
+import it.polito.ai.esercitazione3.repositories.UserRepository;
 import it.polito.ai.esercitazione3.security.AuthorizationManager;
 import it.polito.ai.esercitazione3.viewmodels.AuthorizationDTO;
 import it.polito.ai.esercitazione3.viewmodels.RegistrationDTO;
@@ -13,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,10 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -35,13 +40,11 @@ import java.util.stream.Collectors;
 public class UserService implements InitializingBean, UserDetailsService {
     private static final long CONF_TOKEN_EXPIRY_HOURS = 24;
     private static final long RECOVER_TOKEN_EXPIRY_MIN = 30;
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private static final Logger log = LoggerFactory.getLogger(LineService.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private LineRepository lineRepository;
-    @Autowired
-    private PupilRepository pupilRepository;
     @Autowired
     private ConfirmationTokenRepository confirmationTokenRepository;
     @Autowired
@@ -214,86 +217,51 @@ public class UserService implements InitializingBean, UserDetailsService {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        log.info("Inizializzazione!");
-
-        Line line1 = lineRepository.getByName("Line1");
-        Line line2 = lineRepository.getByName("Line2");
         User user;
-        Pupil p;
         ArrayList<String> roles;
         ArrayList<Line> lines;
-        ArrayList<Pupil> pupils;
 
-        /* Create Admin */
-        roles = new ArrayList<>();
+        //create SYSTEM_ADMIN
+        roles=new ArrayList<>();
         roles.add("ROLE_SYSTEM-ADMIN");
-        persistNewUser("admin@email.it", roles, null, "Admin0");
+        user = User.builder()
+                .email("user0@email.it")
+                .enabled(true)
+                .roles(roles)
+                .password(passwordEncoder.encode("qwerty"))
+                .build();
 
-        /* Create User0 */
-        roles = new ArrayList<>();
-        lines = new ArrayList<>();
+        userRepository.save(user);
+
+        //create ADMIN of Line1
+        roles=new ArrayList<>();
+        lines=new ArrayList<>();
         roles.add("ROLE_ADMIN");
         roles.add("ROLE_USER");
-        lines.add(line1);
-        user = persistNewUser("user0@email.it", roles, lines, "Password0");
-
-        /* Create User0's pupils */
-        persistNewPupil("Andrea", line1, user);
-        persistNewPupil("Federico", line1, user);
-        persistNewPupil("Kamil", line1, user);
-
-        /* Create User1 */
-        roles = new ArrayList<>();
-        lines = new ArrayList<>();
-        roles.add("ROLE_USER");
-        user = persistNewUser("user1@email.it", roles, lines, "Password1");
-
-        /* Create User1's pupils */
-        persistNewPupil("Luigi", line1, user);
-        persistNewPupil("Mario", line1, user);
-
-        /* Create User2 */
-        roles = new ArrayList<>();
-        lines = new ArrayList<>();
-        roles.add("ROLE_ADMIN");
-        roles.add("ROLE_USER");
-        lines.add(line2);
-        user = persistNewUser("user2@email.it", roles, lines, "Password2");
-
-        /* Create User2's pupils */
-        persistNewPupil("Giovanni", line2, user);
-        persistNewPupil("Piero", line2, user);
-        persistNewPupil("Anna", line2, user);
-
-        /* Create User3 */
-        roles = new ArrayList<>();
-        lines = new ArrayList<>();
-        roles.add("ROLE_USER");
-        user = persistNewUser("user3@email.it", roles, lines, "Password3");
-
-        /* Create User0's pupils */
-        persistNewPupil("Massimo", line2, user);
-        persistNewPupil("Giorgia", line2, user);
-
-    }
-
-    User persistNewUser(String email, List<String> roles, List<Line> lines, String password) {
-        User user = User.builder()
-                .email(email)
+        lines.add(lineRepository.getByName("Line1"));
+        user = User.builder()
+                .email("user1@email.it")
                 .enabled(true)
                 .roles(roles)
                 .lines(lines)
-                .password(passwordEncoder.encode(password))
+                .password(passwordEncoder.encode("qwerty"))
                 .build();
-        return userRepository.save(user);
-    }
 
-    void persistNewPupil(String name, Line line, User user) {
-        Pupil p = new Pupil();
-        p.setName(name);
-        p.setLine(line);
-        p.setUser(user);
-        pupilRepository.save(p);
+        userRepository.save(user);
+
+        //create 5 USERS
+        for(int i=2; i<5;i++){
+            roles= new ArrayList<>();
+            roles.add("ROLE_USER");
+            user = User.builder()
+                    .email("user"+i+"@email.it")
+                    .enabled(true)
+                    .roles(roles)
+                    .password(passwordEncoder.encode("qwerty"))
+                    .build();
+
+            userRepository.save(user);
+        }
     }
 
     @Override

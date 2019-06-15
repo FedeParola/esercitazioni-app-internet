@@ -2,34 +2,34 @@
 	"name": "Line1",
 	"outwardStops": [
 		{
-			"name": "Ferrucci",
+			"name": "Line1_Stop1",
 			"position": 0,
 			"time": "07:30"
 		},
 		{
-			"name": "Sabotino",
+			"name": "Line1_Stop2",
 			"position": 1,
 			"time": "07:40"
 		},
 		{
-			"name": "Adriano",
+			"name": "Line1_Stop3",
 			"position": 2,
 			"time": "07:50"
 		}
 	],
 	"returnStops": [
 		{
-			"name": "Adriano",
+			"name": "Line1_Stop3",
 			"position": 0,
 			"time": "13:10"
 		},
 		{
-			"name": "Sabotino",
+			"name": "Line1_Stop2",
 			"position": 1,
 			"time": "13:20"
 		},
 		{
-			"name": "Ferrucci",
+			"name": "Line1_Stop1",
 			"position": 2,
 			"time": "13:30"
 		}

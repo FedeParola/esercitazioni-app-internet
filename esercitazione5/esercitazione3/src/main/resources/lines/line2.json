@@ -2,34 +2,34 @@
 	"name": "Line2",
 	"outwardStops": [
 		{
-			"name": "Nizza",
+			"name": "Line2_Stop1",
 			"position": 0,
 			"time": "07:35"
 		},
 		{
-			"name": "Mediterraneo",
+			"name": "Line2_Stop2",
 			"position": 1,
 			"time": "07:45"
 		},
 		{
-			"name": "Porta Nuova",
+			"name": "Line2_Stop3",
 			"position": 2,
 			"time": "07:55"
 		}
 	],
 	"returnStops": [
 		{
-			"name": "Porta Nuova",
+			"name": "Line2_Stop3",
 			"position": 0,
 			"time": "13:15"
 		},
 		{
-			"name": "Meditterraneo",
+			"name": "Line2_Stop2",
 			"position": 1,
 			"time": "13:25"
 		},
 		{
-			"name": "Nizza",
+			"name": "Line2_Stop1",
 			"position": 2,
 			"time": "13:35"
 		}
