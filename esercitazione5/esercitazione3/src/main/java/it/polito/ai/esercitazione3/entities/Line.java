@@ -1,6 +1,8 @@
 package it.polito.ai.esercitazione3.entities;
 
 import lombok.Data;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
 import java.util.List;
@@ -17,6 +19,7 @@ public class Line {
     private String name;
 
     @OneToMany(mappedBy = "line")
+    @LazyCollection(LazyCollectionOption.FALSE)
     private List<Stop> stops;
 
     @OneToMany(mappedBy = "line")
