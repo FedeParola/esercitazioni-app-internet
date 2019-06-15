@@ -77,7 +77,7 @@ public class UserService implements InitializingBean, UserDetailsService {
 
         /* Store the user in disabled state, with USER role */
         ArrayList<String> roles = new ArrayList<>();
-        roles.add("USER");
+        roles.add("ROLE_USER");
         user = User.builder().email(registrationDTO.getEmail())
                 .password(passwordEncoder.encode(registrationDTO.getPass()))
                 .enabled(false)
