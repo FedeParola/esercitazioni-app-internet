@@ -14,8 +14,10 @@ export class AppComponent implements OnInit {
     private router: Router) {}
 
   ngOnInit() {
-    this.logoutDisabled = true;
-    this.router.navigateByUrl('/login');
+    if(this.authService.isLoggedOut()){
+      this.logoutDisabled = true;
+      this.router.navigateByUrl('/login');
+    }
   }
 
   logout() {
