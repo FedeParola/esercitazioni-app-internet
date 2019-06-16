@@ -17,6 +17,10 @@ export class AppComponent implements OnInit {
     if(this.authService.isLoggedOut()){
       this.logoutDisabled = true;
       this.router.navigateByUrl('/login');
+    
+    } else {
+      this.logoutDisabled = false;
+      this.router.navigateByUrl('/attendance');
     }
   }
 
