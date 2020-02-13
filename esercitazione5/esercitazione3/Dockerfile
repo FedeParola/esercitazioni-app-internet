@@ -18,4 +18,4 @@ COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-cp","app:app/lib/*","it.polito.ai.pedibusbackend.PedibusBackendApplication"]
+ENTRYPOINT ["java", "-cp","app:app/lib/*","it.polito.ai.esercitazione3.Esercitazione3Application"]
